@@ -1,0 +1,30 @@
+# Data Source Name
+DataSourceName = "/var/log/application.log"
+
+# Name of fields with associated data type
+Fields :
+    @Customer = String      # Tree index
+    @Marketplace = Integer  # Tree index
+    #RequestId = String     # Hash index
+    Query = String
+    Cookie = String
+    Referrer = String
+    @Operation = String     # Tree index
+    UserAgent = String
+    @Program = String       # Tree index
+    Headers = String
+    FormData = String
+    StatusCode = Number
+    Host = String
+    Path = String
+    Method = String
+    IP = String
+    Time = Double
+    StartTime = TimeStamp
+    EndTime = TimeStamp
+
+# End of entry marker
+    EOE = EOE
+
+# Record Separator (optional)
+    EOF = ---
