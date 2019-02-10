@@ -52,164 +52,164 @@ import org.apache.log4j.Logger;
  */
 public class Environment {
 
-  /**
-   * Properties file
-   */
-  private final Map<Object, Object> properties = new LinkedHashMap<>();
-
-  /**
-   * Root path
-   */
-  private static String rootPath = StringUtils.EMPTY;
-
-  public Environment() {
-  }
-
-  /**
-   * This constructor should be called only once preferably when the system is getting initialized.
-   * The constructor takes a single input argument that points to root path of the application. The
-   * root path will be set using the -Dlivequery.root JVM property.
-   */
-  public Environment(String rootPath) {
-    if (StringUtils.isNotEmpty(Environment.rootPath)) {
-      throw new IllegalStateException(
-          "This constructor should be called once when livequery runtime environment is initialized");
-    }
-
-    /* Set root path */
-    Environment.rootPath = rootPath;
-
-    /* Load properties */
-    load();
-  }
-
-  private String stringify(String in) {
-    StringBuffer buffer = new StringBuffer();
-    for (int i = 0; i < in.length(); i++) {
-      char ch = in.charAt(i);
-      if (ch != '$' && ch != '{' && ch != '}') {
-        buffer.append(ch);
-      }
-    }
-
-    return buffer.toString();
-  }
-
-  private String getPropertiesFilePath() {
-    String path = appendPath(getRootPath(), new String[]{".properties"});
-
-    File file = new File(path);
-    if (!file.exists()) {
-      throw new IllegalStateException(
-          String.format("Unable to find properties file with specified filename %s", path));
-    }
-
-    return file.getAbsolutePath();
-  }
-
-  private String appendPath(String arg, String[] args) {
-    StringBuffer sb = new StringBuffer().append(arg);
-    if (sb.charAt(sb.length() - 1) != '/') {
-      sb.append("/");
-    }
-
-    Arrays.asList(args).stream()
-        .forEach(s -> sb.append(s).append("/"));
-    return sb.deleteCharAt(sb.length() - 1).toString();
-  }
-
-  public Map<Object, Object> getProperties() {
-    return properties;
-  }
-
-  public String getProperty(String name) {
-    return (String) properties.get(name);
-  }
-
-  public String getCodecFilePath() {
-    return (String) properties.get("livequery.codec");
-  }
-
-  public String getLog4jProperties() {
-    return (String) properties.get("log4j.config");
-  }
-
-  public String getClassPath() {
-    return (String) properties.get("classpath");
-  }
-
-  private String getRootPath() {
-    return rootPath;
-  }
-
-  /**
-   * Load properties object for livequery environment. If the properties object already has
-   * properties associated with it then clears all existing properties and re-loads them.
-   */
-  private void load() {
-    if (properties.size() > 0) {
-      properties.clear();
-    }
-
-    String path = getPropertiesFilePath();
-
-    try {
-      Pattern pattern = Pattern.compile("(.*)=(.*)");
-      List<String> lines = Files.readLines(new File(path), Charset.defaultCharset());
-      lines.stream()
-          .forEach(s -> {
-            Matcher matcher = pattern.matcher(s);
-            if (matcher.matches()) {
-              String key = matcher.group(1).trim();
-              String value = matcher.group(2).trim();
-              properties.put(key, value);
-            }
-          });
-    } catch (IOException e) {
-    }
-
-    /* Resolve property values replacing property key parts with actual values e.g. a value of
-     * ${livequery.base} will be replaced with actual values during resolution.
+    /**
+     * Properties file
      */
-    resolve();
-  }
+    private static final Map<Object, Object> properties = new LinkedHashMap<>();
 
-  private void resolve() {
-    Map<Object, Object> entries = new LinkedHashMap<>();
+    /**
+     * Root path
+     */
+    private static String rootPath = StringUtils.EMPTY;
 
-    properties.entrySet().stream()
-        .forEach(e -> {
-          AbstractMap.SimpleEntry<String, String> entry =
-              new AbstractMap.SimpleEntry<String, String>((String) e.getKey(),
-                  extract((String) e.getValue(), entries));
-          entries.put(entry.getKey(), entry.getValue());
-        });
-
-    properties.clear();
-    entries.entrySet().forEach(e -> properties.put(e.getKey(), e.getValue()));
-  }
-
-  private String extract(String value, Map entries) {
-    Pattern pattern = Pattern.compile(".*\\$\\{(.*)\\}.*");
-    Matcher matcher = pattern.matcher(value);
-
-    String text = StringUtils.EMPTY;
-    if (matcher.find()) {
-      text = matcher.group(1);
-    } else {
-      return value;
+    public Environment() {
     }
 
-    String replacementText = System.getProperty(text);
-    if (null != replacementText) {
-      return stringify(StringUtils.replace((String) value, text, replacementText));
-    } else {
-      replacementText = (String) entries.get(text);
-      if (null != replacementText) {
-        return stringify(StringUtils.replace((String) value, text, replacementText));
-      }
+    /**
+     * This constructor should be called only once preferably when the system is getting initialized.
+     * The constructor takes a single input argument that points to root path of the application. The
+     * root path will be set using the -Dlivequery.root JVM property.
+     */
+    public Environment(String rootPath) {
+        if (StringUtils.isNotEmpty(Environment.rootPath)) {
+            throw new IllegalStateException(
+                "This constructor should be called once when livequery runtime environment is initialized");
+        }
+
+        /* Set root path */
+        Environment.rootPath = rootPath;
+
+        /* Load properties */
+        load();
     }
 
-    return value;
-  }
+    private String stringify(String in) {
+        StringBuffer buffer = new StringBuffer();
+        for (int i = 0; i < in.length(); i++) {
+            char ch = in.charAt(i);
+            if (ch != '$' && ch != '{' && ch != '}') {
+                buffer.append(ch);
+            }
+        }
+
+        return buffer.toString();
+    }
+
+    private String getPropertiesFilePath() {
+        String path = appendPath(getRootPath(), new String[]{".properties"});
+
+        File file = new File(path);
+        if (!file.exists()) {
+            throw new IllegalStateException(
+                String.format("Unable to find properties file with specified filename %s", path));
+        }
+
+        return file.getAbsolutePath();
+    }
+
+    private String appendPath(String arg, String[] args) {
+        StringBuffer sb = new StringBuffer().append(arg);
+        if (sb.charAt(sb.length() - 1) != '/') {
+            sb.append("/");
+        }
+
+        Arrays.asList(args).stream()
+            .forEach(s -> sb.append(s).append("/"));
+        return sb.deleteCharAt(sb.length() - 1).toString();
+    }
+
+    public Map<Object, Object> getProperties() {
+        return properties;
+    }
+
+    public String getProperty(String name) {
+        return (String) properties.get(name);
+    }
+
+    public String getCodecFilePath() {
+        return (String) properties.get("livequery.codec");
+    }
+
+    public String getLog4jProperties() {
+        return (String) properties.get("log4j.config");
+    }
+
+    public String getClassPath() {
+        return (String) properties.get("classpath");
+    }
+
+    private String getRootPath() {
+        return rootPath;
+    }
+
+    /**
+     * Load properties object for livequery environment. If the properties object already has
+     * properties associated with it then clears all existing properties and re-loads them.
+     */
+    private void load() {
+        if (properties.size() > 0) {
+            properties.clear();
+        }
+
+        String path = getPropertiesFilePath();
+
+        try {
+            Pattern pattern = Pattern.compile("(.*)=(.*)");
+            List<String> lines = Files.readLines(new File(path), Charset.defaultCharset());
+            lines.stream()
+                .forEach(s -> {
+                    Matcher matcher = pattern.matcher(s);
+                    if (matcher.matches()) {
+                        String key = matcher.group(1).trim();
+                        String value = matcher.group(2).trim();
+                        properties.put(key, value);
+                    }
+                });
+        } catch (IOException e) {
+        }
+
+        /* Resolve property values replacing property key parts with actual values e.g. a value of
+         * ${livequery.base} will be replaced with actual values during resolution.
+         */
+        resolve();
+    }
+
+    private void resolve() {
+        Map<Object, Object> entries = new LinkedHashMap<>();
+
+        properties.entrySet().stream()
+            .forEach(e -> {
+                AbstractMap.SimpleEntry<String, String> entry =
+                    new AbstractMap.SimpleEntry<String, String>((String) e.getKey(),
+                        extract((String) e.getValue(), entries));
+                entries.put(entry.getKey(), entry.getValue());
+            });
+
+        properties.clear();
+        entries.entrySet().forEach(e -> properties.put(e.getKey(), e.getValue()));
+    }
+
+    private String extract(String value, Map entries) {
+        Pattern pattern = Pattern.compile(".*\\$\\{(.*)\\}.*");
+        Matcher matcher = pattern.matcher(value);
+
+        String text = StringUtils.EMPTY;
+        if (matcher.find()) {
+            text = matcher.group(1);
+        } else {
+            return value;
+        }
+
+        String replacementText = System.getProperty(text);
+        if (null != replacementText) {
+            return stringify(StringUtils.replace((String) value, text, replacementText));
+        } else {
+            replacementText = (String) entries.get(text);
+            if (null != replacementText) {
+                return stringify(StringUtils.replace((String) value, text, replacementText));
+            }
+        }
+
+        return value;
+    }
 }

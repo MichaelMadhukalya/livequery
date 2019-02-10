@@ -1,11 +1,11 @@
 # Data Source Name
-DataSourceName = "/var/log/application.log"
+DataSourceName = /var/log/application.log
 
 # Name of fields with associated data type
 Fields :
     @Customer = String      # Tree index
     @Marketplace = Integer  # Tree index
-    #RequestId = String     # Hash index
+    $RequestId = String     # Hash index
     Query = String
     Cookie = String
     Referrer = String

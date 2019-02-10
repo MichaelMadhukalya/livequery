@@ -2,5 +2,5 @@ package com.livequery.annotations;
 
 public @interface RunContinuously {
 
-  boolean runContinuously() default true;
+    boolean runContinuously() default true;
 }

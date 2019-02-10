@@ -26,60 +26,60 @@ import org.objectweb.asm.Opcodes;
  */
 class ClassTransformer<T> implements IClassTransformer<String, String> {
 
-  /**
-   * Logger
-   */
-  private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
+    /**
+     * Logger
+     */
+    private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
 
-  /**
-   * Type to be transformed
-   */
-  private final Class<T> type;
+    /**
+     * Type to be transformed
+     */
+    private final Class<T> type;
 
-  /**
-   * Supported types
-   */
-  private final JavaSupportedTypes javaSupportedDataTypes = new JavaSupportedTypes();
+    /**
+     * Supported types
+     */
+    private final JavaSupportedTypes javaSupportedDataTypes = new JavaSupportedTypes();
 
-  public ClassTransformer(Class<T> type) {
-    this.type = type;
-  }
-
-  @Override
-  public byte[] transform(@NonNull Map<String, String> input) {
-    Map<String, String> target = input.entrySet().stream()
-        .collect(Collectors.toMap(
-            e -> e.getKey(),
-            e -> javaSupportedDataTypes.getDescriptor(e.getKey()).orElse(StringUtils.EMPTY)));
-
-    /* Ensure that data types have correct Java supported types */
-    long invalidTypeCount = target.entrySet().stream()
-        .filter(e -> e.getValue().equals(StringUtils.EMPTY))
-        .count();
-    if (invalidTypeCount > 0) {
-      logger.error(String
-          .format("%d unsupported data type found in input, transformation won't be correct",
-              invalidTypeCount));
-      throw new IllegalStateException(
-          "Unsupported data type found in input, transformation won't be correct");
+    public ClassTransformer(Class<T> type) {
+        this.type = type;
     }
 
-    byte[] bytes = null;
-    try {
-      ClassReader reader = new ClassReader(type.getCanonicalName());
-      ClassWriter writer = new ClassWriter(0);
-      ClassVisitor visitor = new AppClassVisitor(Opcodes.V1_8, writer);
-      reader.accept(visitor, 0);
-      bytes = writer.toByteArray();
-    } catch (IOException e) {
-      logger.error(String.format("Unable to load class {%s} for parsing", type.getCanonicalName()));
-    } catch (Exception e) {
-      logger.error(String
-          .format("Exception encountered while trying to transform class {%s}. Exception {%s}",
-              type.getCanonicalName(), e));
-    }
+    @Override
+    public byte[] transform(@NonNull Map<String, String> input) {
+        Map<String, String> target = input.entrySet().stream()
+            .collect(Collectors.toMap(
+                e -> e.getKey(),
+                e -> javaSupportedDataTypes.getDescriptor(e.getKey()).orElse(StringUtils.EMPTY)));
 
-    return bytes;
-  }
+        /* Ensure that data types have correct Java supported types */
+        long invalidTypeCount = target.entrySet().stream()
+            .filter(e -> e.getValue().equals(StringUtils.EMPTY))
+            .count();
+        if (invalidTypeCount > 0) {
+            logger.error(String
+                .format("%d unsupported data type found in input, transformation won't be correct",
+                    invalidTypeCount));
+            throw new IllegalStateException(
+                "Unsupported data type found in input, transformation won't be correct");
+        }
+
+        byte[] bytes = null;
+        try {
+            ClassReader reader = new ClassReader(type.getCanonicalName());
+            ClassWriter writer = new ClassWriter(0);
+            ClassVisitor visitor = new AppClassVisitor(Opcodes.V1_8, writer);
+            reader.accept(visitor, 0);
+            bytes = writer.toByteArray();
+        } catch (IOException e) {
+            logger.error(String.format("Unable to load class {%s} for parsing", type.getCanonicalName()));
+        } catch (Exception e) {
+            logger.error(String
+                .format("Exception encountered while trying to transform class {%s}. Exception {%s}",
+                    type.getCanonicalName(), e));
+        }
+
+        return bytes;
+    }
 }
 

@@ -5,18 +5,18 @@ package com.livequery.common;
  */
 public interface ICodecParser<K, V> {
 
-  /**
-   * @return The status while extracting the next token key/value pair from code file
-   */
-  int next();
+    /**
+     * @return The status while extracting the next token key/value pair from code file
+     */
+    int next();
 
-  /**
-   * @return Extracted key from codec file
-   */
-  K nextKey();
+    /**
+     * @return Extracted key from codec file
+     */
+    K getKey();
 
-  /**
-   * @return Extracted value from codec file
-   */
-  V nextValue();
+    /**
+     * @return Extracted value from codec file
+     */
+    V getValue();
 }
