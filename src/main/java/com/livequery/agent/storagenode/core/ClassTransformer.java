@@ -1,5 +1,7 @@
 package com.livequery.agent.storagenode.core;
 
+import static org.objectweb.asm.Opcodes.ASM4;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,7 +11,6 @@ import org.apache.log4j.Logger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 
 /**
  * A <code>ClassTransformer</code> transforms an input class field by field based upon a map
@@ -18,13 +19,13 @@ import org.objectweb.asm.Opcodes;
  * data type is not same then we update the instance field of the class with the data type specified
  * in the map. On the other hand if the data types of both source and target fields are same then it
  * is a no-op.
- *
+ * <p>
  * Furthermore, there could be instance fields specified in the input map which are not part of the
  * class and fields that are part of the class but are absent in the input map. In the former case,
  * a new field will be added to the class, whereas, in the later case the field from the class will
  * be deleted.
  */
-class ClassTransformer<T> implements IClassTransformer<String, String> {
+class ClassTransformer implements IClassTransformer<String, Object> {
 
     /**
      * Logger
@@ -34,23 +35,24 @@ class ClassTransformer<T> implements IClassTransformer<String, String> {
     /**
      * Type to be transformed
      */
-    private final Class<T> type;
+    private final Class<?> type;
 
     /**
      * Supported types
      */
     private final JavaSupportedTypes javaSupportedDataTypes = new JavaSupportedTypes();
 
-    public ClassTransformer(Class<T> type) {
+    public ClassTransformer(Class<?> type) {
         this.type = type;
     }
 
     @Override
-    public byte[] transform(@NonNull Map<String, String> input) {
+    public byte[] transform(@NonNull Map<String, Object> input) {
         Map<String, String> target = input.entrySet().stream()
             .collect(Collectors.toMap(
                 e -> e.getKey(),
-                e -> javaSupportedDataTypes.getDescriptor(e.getKey()).orElse(StringUtils.EMPTY)));
+                e -> javaSupportedDataTypes.getDescriptor((String) e.getValue())
+                    .orElse(StringUtils.EMPTY)));
 
         /* Ensure that data types have correct Java supported types */
         long invalidTypeCount = target.entrySet().stream()
@@ -68,14 +70,21 @@ class ClassTransformer<T> implements IClassTransformer<String, String> {
         try {
             ClassReader reader = new ClassReader(type.getCanonicalName());
             ClassWriter writer = new ClassWriter(0);
-            ClassVisitor visitor = new AppClassVisitor(Opcodes.V1_8, writer);
+            logger.info(String
+                .format("Initialized reader and writer class for byte transforming : {%s}",
+                    type.getCanonicalName()));
+
+            ClassVisitor visitor = new AppClassVisitor(ASM4, writer, target);
             reader.accept(visitor, 0);
             bytes = writer.toByteArray();
+            logger.info(String.format("Byte code array created with length: {%d}", bytes.length));
         } catch (IOException e) {
-            logger.error(String.format("Unable to load class {%s} for parsing", type.getCanonicalName()));
+            logger.error(
+                String.format("Unable to load class {%s} for parsing", type.getCanonicalName()));
         } catch (Exception e) {
             logger.error(String
-                .format("Exception encountered while trying to transform class {%s}. Exception {%s}",
+                .format(
+                    "Exception encountered while trying to transform class {%s}. Exception {%s}",
                     type.getCanonicalName(), e));
         }
 

@@ -13,17 +13,21 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-class ClassModifier<T> {
+/**
+ * The purpose of <code>ClassModifier</code> is to overwrite on disk byte codes for a given input
+ * class. Once the byte codes for the input class are overwritten, the app class loader can re-load
+ * the input class again with updated fields/methods.
+ */
+class ClassModifier {
 
     /**
      * Logger
      */
     private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
-
     /**
      * Class type that needs to be re-written to .class file stored as byte code on disk
      */
-    private final Class<T> clazz;
+    private final Class<?> type;
 
     /**
      * Environment
@@ -35,15 +39,15 @@ class ClassModifier<T> {
      */
     private Path location;
 
-    public ClassModifier(Class<T> clazz) {
-        this.clazz = clazz;
+    public ClassModifier(Class<?> type) {
+        this.type = type;
     }
 
     public boolean write(byte[] data) {
         Path path = findClass(environment.getClassPath());
         if (null == path || StringUtils.isEmpty(path.toString())) {
             logger.error(
-                String.format("Unable to locate class %s inside class path", clazz.getSimpleName()));
+                String.format("Unable to locate class %s inside class path", type.getSimpleName()));
             return false;
         }
 
@@ -53,7 +57,8 @@ class ClassModifier<T> {
             fileOutputStream.write(data);
             success = true;
         } catch (Exception e) {
-            logger.error(String.format("Exception encountered while trying to overwrite file {%s}", e));
+            logger.error(
+                String.format("Exception encountered while trying to overwrite file {%s}", e));
         }
 
         return success;
@@ -84,7 +89,8 @@ class ClassModifier<T> {
         try {
             Files.walkFileTree(Paths.get(classpath), new FileVisitor<Path>() {
                 @Override
-                public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes basicFileAttributes)
+                public FileVisitResult preVisitDirectory(Path path,
+                    BasicFileAttributes basicFileAttributes)
                     throws IOException {
                     if (StringUtils.isNotEmpty(ClassModifier.this.location.toString())) {
                         return FileVisitResult.TERMINATE;
@@ -96,11 +102,12 @@ class ClassModifier<T> {
                 @Override
                 public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes)
                     throws IOException {
-                    String classFile = clazz.getSimpleName() + ".class";
+                    String classFile = type.getSimpleName() + ".class";
                     if (path.toString().endsWith(classFile)) {
                         location = path;
-                        logger.info(String.format("Class %s found inside classpath dir with file name %s",
-                            ClassModifier.this.clazz.getSimpleName(), path.toString()));
+                        logger.info(
+                            String.format("Class %s found inside classpath dir with file name %s",
+                                ClassModifier.this.type.getSimpleName(), path.toString()));
                         return FileVisitResult.TERMINATE;
                     }
 
@@ -108,20 +115,24 @@ class ClassModifier<T> {
                 }
 
                 @Override
-                public FileVisitResult visitFileFailed(Path path, IOException e) throws IOException {
+                public FileVisitResult visitFileFailed(Path path, IOException e)
+                    throws IOException {
                     if (null != e) {
                         logger.error(String
-                            .format("File visit failed %s with exception {%s}", path.toString(), e));
+                            .format("File visit failed %s with exception {%s}", path.toString(),
+                                e));
                     }
 
                     return FileVisitResult.CONTINUE;
                 }
 
                 @Override
-                public FileVisitResult postVisitDirectory(Path path, IOException e) throws IOException {
+                public FileVisitResult postVisitDirectory(Path path, IOException e)
+                    throws IOException {
                     if (null != e) {
                         logger.error(
-                            String.format("Directory visit failed %s with exception {%s}", path.toString(), e));
+                            String.format("Directory visit failed %s with exception {%s}",
+                                path.toString(), e));
                     }
 
                     return FileVisitResult.CONTINUE;
@@ -130,7 +141,7 @@ class ClassModifier<T> {
         } catch (IOException e) {
             logger.error(String
                 .format("Exception while trying to search for class %s in classpath {%s}",
-                    clazz.getSimpleName(), e));
+                    type.getSimpleName(), e));
         }
 
         return location;

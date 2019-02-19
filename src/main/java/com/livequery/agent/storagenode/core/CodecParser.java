@@ -1,12 +1,13 @@
-package com.livequery.common;
+package com.livequery.agent.storagenode.core;
 
-import static com.livequery.common.CodecParser.Status.COMMENT;
-import static com.livequery.common.CodecParser.Status.EMPTY_LINE;
-import static com.livequery.common.CodecParser.Status.EOF;
-import static com.livequery.common.CodecParser.Status.FIELD;
-import static com.livequery.common.CodecParser.Status.LINE;
+import static com.livequery.agent.storagenode.core.CodecParser.Status.COMMENT;
+import static com.livequery.agent.storagenode.core.CodecParser.Status.EMPTY_LINE;
+import static com.livequery.agent.storagenode.core.CodecParser.Status.EOF;
+import static com.livequery.agent.storagenode.core.CodecParser.Status.FIELD;
+import static com.livequery.agent.storagenode.core.CodecParser.Status.LINE;
 
 import com.google.common.collect.ImmutableMap;
+import com.livequery.common.Environment;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -19,9 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
- * This class implements a simple <code>Codec</code> parser that reads an input codec file line by
- * line and extracts key/value pairs from the file. Objects of this class are supposed to be
- * instantiated from <code>CodecMapper</code> class.
+ * This class implements a parser that reads an input codec file line by line and extracts key/value
+ * pairs from the file. Objects of this class are supposed to be instantiated from
+ * <code>CodecMapper</code> class only so both classes share a common package.
  */
 class CodecParser implements ICodecParser<String, Object> {
 

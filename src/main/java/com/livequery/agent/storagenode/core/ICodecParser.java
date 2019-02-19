@@ -1,4 +1,4 @@
-package com.livequery.common;
+package com.livequery.agent.storagenode.core;
 
 /**
  * Interface for parsing file codec. Clients are expected to provide specific implementation.

@@ -6,9 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import org.apache.log4j.Logger;
 import org.objectweb.asm.Type;
 
 class JavaSupportedTypes {
+
+    private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
 
     /**
      * Map of supported Java data types. The key represents type name whereas the value represents the

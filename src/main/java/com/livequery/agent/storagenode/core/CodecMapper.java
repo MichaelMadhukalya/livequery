@@ -1,7 +1,9 @@
-package com.livequery.common;
+package com.livequery.agent.storagenode.core;
 
 import com.google.common.collect.Maps;
-import com.livequery.common.CodecParser.Status;
+import com.livequery.agent.storagenode.core.CodecParser;
+import com.livequery.agent.storagenode.core.CodecParser.Status;
+import com.livequery.common.Environment;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Logger;
