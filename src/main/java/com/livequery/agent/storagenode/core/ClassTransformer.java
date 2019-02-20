@@ -13,19 +13,21 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
 /**
+ * <p>
  * A <code>ClassTransformer</code> transforms an input class field by field based upon a map
  * provided to it as input. The logic goes something like this: for every instance field in the
  * class check to see if the data type of the field specified in the input map is the same. If the
  * data type is not same then we update the instance field of the class with the data type specified
  * in the map. On the other hand if the data types of both source and target fields are same then it
  * is a no-op.
+ *
  * <p>
  * Furthermore, there could be instance fields specified in the input map which are not part of the
  * class and fields that are part of the class but are absent in the input map. In the former case,
  * a new field will be added to the class, whereas, in the later case the field from the class will
  * be deleted.
  */
-class ClassTransformer implements IClassTransformer<String, Object> {
+public class ClassTransformer implements IClassTransformer<String, Object> {
 
     /**
      * Logger

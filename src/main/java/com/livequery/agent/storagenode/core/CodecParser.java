@@ -19,11 +19,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-/**
- * This class implements a parser that reads an input codec file line by line and extracts key/value
- * pairs from the file. Objects of this class are supposed to be instantiated from
- * <code>CodecMapper</code> class only so both classes share a common package.
- */
 class CodecParser implements ICodecParser<String, Object> {
 
     /**

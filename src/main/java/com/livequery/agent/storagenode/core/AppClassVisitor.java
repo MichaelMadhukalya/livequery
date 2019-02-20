@@ -34,7 +34,7 @@ import org.objectweb.asm.FieldVisitor;
  * </ul>
  * </p>
  */
-class AppClassVisitor extends ClassVisitor {
+public class AppClassVisitor extends ClassVisitor {
 
     /**
      * Logger

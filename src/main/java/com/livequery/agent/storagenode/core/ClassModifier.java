@@ -14,11 +14,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
- * The purpose of <code>ClassModifier</code> is to overwrite on disk byte codes for a given input
- * class. Once the byte codes for the input class are overwritten, the app class loader can re-load
- * the input class again with updated fields/methods.
+ * <p>
+ * The purpose of <code>ClassModifier</code> is to overwrite byte codes for a given input class on
+ * disk with updated fields/methods/annotations. Once the byte codes are overwritten, the app class
+ * loader can re-load the class again with updated fields/methods.
+ * </p>
  */
-class ClassModifier {
+public class ClassModifier {
 
     /**
      * Logger
@@ -56,9 +58,10 @@ class ClassModifier {
             new File(path.toAbsolutePath().toString()), false)) {
             fileOutputStream.write(data);
             success = true;
+            logger.info(String
+                .format("Successfully updated file : {%s}", path.toAbsolutePath().toString()));
         } catch (Exception e) {
-            logger.error(
-                String.format("Exception encountered while trying to overwrite file {%s}", e));
+            logger.error(String.format("Exception encountered while updating file: {%s}", e));
         }
 
         return success;
@@ -67,7 +70,7 @@ class ClassModifier {
     /**
      * TODO: implement async update of .class files with contents of byte array
      */
-    private boolean writeAsync(byte[] data) {
+    public boolean writeAsync(byte[] data) {
         return false;
     }
 
@@ -86,13 +89,15 @@ class ClassModifier {
      * @return Location of the class file
      */
     private Path findClass(String classpath) {
+        logger.info(String.format("Searching for class inside class path : {%s}", classpath));
+
         try {
             Files.walkFileTree(Paths.get(classpath), new FileVisitor<Path>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path path,
                     BasicFileAttributes basicFileAttributes)
                     throws IOException {
-                    if (StringUtils.isNotEmpty(ClassModifier.this.location.toString())) {
+                    if (null != ClassModifier.this.location) {
                         return FileVisitResult.TERMINATE;
                     }
 
@@ -102,11 +107,12 @@ class ClassModifier {
                 @Override
                 public FileVisitResult visitFile(Path path, BasicFileAttributes basicFileAttributes)
                     throws IOException {
-                    String classFile = type.getSimpleName() + ".class";
-                    if (path.toString().endsWith(classFile)) {
+                    String classFile = type.getSimpleName();
+
+                    if (path.toString().contains(classFile)) {
                         location = path;
                         logger.info(
-                            String.format("Class %s found inside classpath dir with file name %s",
+                            String.format("Class {%s} found inside classpath with file name {%s}",
                                 ClassModifier.this.type.getSimpleName(), path.toString()));
                         return FileVisitResult.TERMINATE;
                     }

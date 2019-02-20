@@ -15,11 +15,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 /**
+ * <p>
  * A simple app class loader implementation based upon the following article:
  * <pre>
  *   https://www.javaworld.com/article/2077260/learn-java/learn-java-the-basics-of-java-class-loaders.html
  * </pre>
  *
+ * <p>
  * The class loader performs the following actions in order while loading a new class:
  * <ul>
  * <li>
@@ -28,19 +30,19 @@ import org.apache.log4j.Logger;
  * </li>
  * <li>
  * Second, if the class is not yet loaded then start the process of loading the class. This involves
- * ensuring that the class is not part of a <pre>System</pre> class or does not have any
- * restrictions associated with it e.g. its canonical name starts with "java." etc.
+ * ensuring that the class is not part of a <code>System</code> class or does not have any
+ * restrictions associated with it e.g. canonical name starts with "java." etc.
  * </li>
  * <li>
- * Load byte code for the class, define the class and resolve it. Defining the class means that all
- * JVM machinery for loading the class in subsequent invocations will be set.
+ * Load byte code for the class, define the class and resolve it. As part of defining the class all
+ * JVM machinery for subsequent loading of the class is set.
  * </li>
  * <li>
  * Finally, cache the class for future loading in a local hash map and return the cached reference.
  * </li>
  * </ul>
  */
-class AppClassLoader extends ClassLoader {
+public class AppClassLoader extends ClassLoader {
 
     /**
      * Logger
@@ -48,8 +50,8 @@ class AppClassLoader extends ClassLoader {
     private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
 
     /**
-     * A cache of class name and class object. If a class name is found in cache the class is resolved
-     * using this cache.
+     * A cache of class name and class object. If a class name is found in cache the class is
+     * resolved using this cache.
      */
     private final Map<String, Class<?>> cache = new HashMap<>();
 
@@ -71,7 +73,8 @@ class AppClassLoader extends ClassLoader {
         result = cache.get(className);
         if (result != null) {
             logger.info(
-                String.format("Class %s has already been loaded. Returning the same class", result));
+                String
+                    .format("Class %s has already been loaded. Returning the same class", result));
             return result;
         }
 
@@ -87,7 +90,8 @@ class AppClassLoader extends ClassLoader {
         /* Check if class is protected */
         if (isProtected(className)) {
             logger.warn(String
-                .format("Class %s has been deemed protected. Will not be resolved by app class loader",
+                .format(
+                    "Class %s has been deemed protected. Will not be resolved by app class loader",
                     className));
             return result;
         }
@@ -95,14 +99,16 @@ class AppClassLoader extends ClassLoader {
         /* Load bytes for class (sync) */
         byte[] data = loadBytes(className);
         if (data == null || data.length == 0) {
-            logger.error(String.format("Unable to load bytes for class %s from class path", className));
+            logger.error(
+                String.format("Unable to load bytes for class %s from class path", className));
             return result;
         }
 
         /* Define the class */
         result = defineClass(className, data, 0, data.length);
         if (result == null) {
-            logger.error(String.format("Unable to define class %s using app class loader", className));
+            logger.error(
+                String.format("Unable to define class %s using app class loader", className));
             return result;
         }
 
@@ -111,9 +117,11 @@ class AppClassLoader extends ClassLoader {
             try {
                 resolveClass(result);
             } catch (LinkageError e) {
-                logger.error(String.format("Exception encountered while trying to resolve class %s", e));
+                logger.error(
+                    String.format("Exception encountered while trying to resolve class %s", e));
             } catch (Exception e) {
-                logger.error(String.format("Exception encountered while trying to resolve class %s", e));
+                logger.error(
+                    String.format("Exception encountered while trying to resolve class %s", e));
             }
         }
 
@@ -146,7 +154,8 @@ class AppClassLoader extends ClassLoader {
                     '.',
                     '/')});
             data = Files.readAllBytes(path);
-            logger.info(String.format("%d bytes read from class file %s", data.length, path.toString()));
+            logger.info(
+                String.format("%d bytes read from class file %s", data.length, path.toString()));
         } catch (ClassNotFoundException e) {
             logger.error(String
                 .format("Exception encountered while attempting to read bytes for class %s: {%s}",

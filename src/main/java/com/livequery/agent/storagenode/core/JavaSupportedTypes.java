@@ -9,13 +9,11 @@ import java.util.function.Predicate;
 import org.apache.log4j.Logger;
 import org.objectweb.asm.Type;
 
-class JavaSupportedTypes {
-
-    private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
+public class JavaSupportedTypes {
 
     /**
-     * Map of supported Java data types. The key represents type name whereas the value represents the
-     * type descriptor e.g. ("string", "Ljava/lang/String") etc.
+     * Map of supported Java data types. The key represents type name whereas the value represents
+     * the type descriptor e.g. ("string", "Ljava/lang/String") etc.
      */
     private final Map<String, String> types = new ImmutableMap.Builder<String, String>()
         .put("boolean", Type.getType(Boolean.class).getInternalName())
@@ -46,7 +44,7 @@ class JavaSupportedTypes {
     /**
      * Get type descriptor for the given typeName (data type name)
      *
-     * @param typeName Key name e.g. Number, String, Timestamp etc.
+     * @param typeName Type name e.g. Number, String, Timestamp etc.
      * @return Type descriptor name in String format e.g. Ljava/lang/String
      */
     public Optional<String> getDescriptor(String typeName) {

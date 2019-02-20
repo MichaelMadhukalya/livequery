@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Logger;
 
-public class CodecMapper {
+class CodecMapper {
 
     /**
      * Logger

@@ -30,8 +30,9 @@ public final class StorageNode extends AbstractNode {
         Map<String, Object> schema = mapper.getSchema();
         logger.info(String.format("Schema fields : {%d}", schema.size()));
 
-        /* Transform class with user provided schematization input */
+        /* Transform class based on user provided schematization and reload using app class loader*/
         ClassTransformer transformer = new ClassTransformer(Schema.class);
-        byte[] bytes = transformer.transform(schema);
+        ClassModifier modifier = new ClassModifier(Schema.class);
+        modifier.write(transformer.transform(schema));
     }
 }

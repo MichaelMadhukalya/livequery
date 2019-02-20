@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
  * An example of such property is the <emp>log4j.config</emp> property using which
  * <code>log4j</code> config is set up for the application:
  * <p>
- * <code>log4j.config = ${livequery.config}/log4j.properties</code>
+ * <code>log4j.config = ${livequery.root}/log4j.properties</code>
  * </p>
  *
  * <p>
@@ -46,6 +46,7 @@ import org.apache.log4j.Logger;
  * </li>
  * </ul>
  *
+ * <p>
  * <b>Note: </b> This class does not have a logger associated with it since in the most likely
  * scenario the first object of this class will instantiated even before <code>log4j</code> for the
  * application is configured.
