@@ -13,7 +13,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class Schema extends Object {
+public class Schema {
 
     @Property(name = "Customer")
     @Id(id = 1)
@@ -158,6 +158,7 @@ public class Schema extends Object {
         return builder.isEquals();
     }
 
+    @Override
     public int hashCode() {
         if (FIELDS.size() == 0) {
             init();

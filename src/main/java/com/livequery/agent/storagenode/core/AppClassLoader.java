@@ -16,10 +16,10 @@ import org.apache.log4j.Logger;
 
 /**
  * <p>
- * A simple app class loader implementation based upon the following article:
- * <pre>
- *   https://www.javaworld.com/article/2077260/learn-java/learn-java-the-basics-of-java-class-loaders.html
- * </pre>
+ * A class loader implementation for reloading <code>Schema</code> class in accordance with
+ * schmeatization provided as per user defined <code>Codec</code> file. Note that for the app class
+ * loader to work correctly the byte codes in .class file for the class has to be present in class
+ * path. The class path link for the application can be found in <code>.properties</code> file.
  *
  * <p>
  * The class loader performs the following actions in order while loading a new class:
@@ -60,86 +60,65 @@ public class AppClassLoader extends ClassLoader {
      */
     private final Environment environment = new Environment();
 
-    public AppClassLoader() {
+    private final String className;
+
+    public AppClassLoader(String className) {
+        this.className = className;
     }
 
     @Override
-    public Class loadClass(String className, boolean resolveIt) {
-        Class<?> result;
+    public Class findClass(String className) throws ClassNotFoundException {
+        /* During class resolution, all classes that are dependencies of this class will be resolved
+         * and findClass called for each of those classes. Need to ensure that for such dependent
+         * classes we find the super findClass method rather than proceeding ahead with loading the
+         * bytes for the class from .class file.
+         */
+        if (!StringUtils.equals(this.className, className)) {
+            return super.findClass(className);
+        }
+
+        logger.info(String.format("Reloading class {%s} using App Class Loader", className));
+
+        Class result;
 
         /* Check to see if the class has already been loaded by this class loader. If that is the case
          * then return a cached copy.
          */
         result = cache.get(className);
         if (result != null) {
-            logger.info(
-                String
-                    .format("Class %s has already been loaded. Returning the same class", result));
+            logger
+                .info(String.format("Class %s already loaded. Returning cached instance", result));
             return result;
         }
 
-        /* Check if requested class is a system class. System classes are not resolved */
-        if (isSystemClass(className)) {
-            logger.warn(String
-                .format(
-                    "Class %s is marked as a system class. Will not be resolved by app class loader",
-                    className));
-            return result;
-        }
+        /* Verify that class is not a system class. Throws ClassNotFoundException in case it is */
+        super.findSystemClass(className);
 
-        /* Check if class is protected */
+        /* Verify that class is not part of protected domain i.e. canonical name does not start with
+         * the words "java" e.g. "java.lang.String"
+         */
         if (isProtected(className)) {
-            logger.warn(String
-                .format(
-                    "Class %s has been deemed protected. Will not be resolved by app class loader",
-                    className));
+            logger.error(String.format("Unable to load {%s} since it is part of protected domain"));
             return result;
         }
 
         /* Load bytes for class (sync) */
         byte[] data = loadBytes(className);
         if (data == null || data.length == 0) {
-            logger.error(
-                String.format("Unable to load bytes for class %s from class path", className));
+            logger.error(String.format("Unable to load bytes for %s from class path", className));
             return result;
         }
 
         /* Define the class */
         result = defineClass(className, data, 0, data.length);
         if (result == null) {
-            logger.error(
-                String.format("Unable to define class %s using app class loader", className));
+            logger.error(String.format("Unable to define %s using app class loader", className));
             return result;
-        }
-
-        /* Resolves the class */
-        if (resolveIt) {
-            try {
-                resolveClass(result);
-            } catch (LinkageError e) {
-                logger.error(
-                    String.format("Exception encountered while trying to resolve class %s", e));
-            } catch (Exception e) {
-                logger.error(
-                    String.format("Exception encountered while trying to resolve class %s", e));
-            }
         }
 
         /* Cache for future reference */
         cache.put(className, result);
         return result;
-    }
-
-    private boolean isSystemClass(String className) {
-        try {
-            Class<?> result = super.findSystemClass(className);
-            return true;
-        } catch (ClassNotFoundException e) {
-            /* An exception means that the class requested is not a system class */
-            logger.info(String.format("%s is not a system class", className));
-        }
-
-        return false;
     }
 
     private boolean isProtected(String className) {
@@ -148,21 +127,23 @@ public class AppClassLoader extends ClassLoader {
 
     private byte[] loadBytes(String className) {
         byte[] data = null;
+
         try {
-            Path path = Paths.get(environment.getClassPath(), new String[]{
-                StringUtils.replaceChars(Class.forName(className).getCanonicalName(),
-                    '.',
-                    '/')});
+            String fileName = StringUtils.join(
+                new String[]{
+                    StringUtils.replaceChars(Class.forName(className).getCanonicalName(),
+                        '.', '/'),
+                    "class"}, ".");
+            Path path = Paths.get(environment.getClassPath(), fileName);
             data = Files.readAllBytes(path);
-            logger.info(
-                String.format("%d bytes read from class file %s", data.length, path.toString()));
+            logger.info(String.format("%d bytes read from file %s", data.length, path.toString()));
         } catch (ClassNotFoundException e) {
-            logger.error(String
-                .format("Exception encountered while attempting to read bytes for class %s: {%s}",
+            logger
+                .error(String.format("Exception while attempting to read bytes for class %s: {%s}",
                     className, e));
         } catch (IOException e) {
-            logger.error(String
-                .format("Exception encountered while attempting to read bytes for class %s: {%s}",
+            logger
+                .error(String.format("Exception while attempting to read bytes for class %s: {%s}",
                     className, e));
         }
 

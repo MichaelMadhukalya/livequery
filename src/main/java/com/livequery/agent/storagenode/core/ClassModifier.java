@@ -19,6 +19,9 @@ import org.apache.log4j.Logger;
  * disk with updated fields/methods/annotations. Once the byte codes are overwritten, the app class
  * loader can re-load the class again with updated fields/methods.
  * </p>
+ *
+ * <p>
+ * TODO: implement method to update byte codes for a class on disk asynchronously.
  */
 public class ClassModifier {
 

@@ -68,7 +68,7 @@ public class ClassTransformer implements IClassTransformer<String, Object> {
                 "Unsupported data type found in input, transformation won't be correct");
         }
 
-        byte[] bytes = null;
+        byte[] data = null;
         try {
             ClassReader reader = new ClassReader(type.getCanonicalName());
             ClassWriter writer = new ClassWriter(0);
@@ -78,8 +78,8 @@ public class ClassTransformer implements IClassTransformer<String, Object> {
 
             ClassVisitor visitor = new AppClassVisitor(ASM4, writer, target);
             reader.accept(visitor, 0);
-            bytes = writer.toByteArray();
-            logger.info(String.format("Byte code array created with length: {%d}", bytes.length));
+            data = writer.toByteArray();
+            logger.info(String.format("Byte code array created with length: {%d}", data.length));
         } catch (IOException e) {
             logger.error(
                 String.format("Unable to load class {%s} for parsing", type.getCanonicalName()));
@@ -90,7 +90,7 @@ public class ClassTransformer implements IClassTransformer<String, Object> {
                     type.getCanonicalName(), e));
         }
 
-        return bytes;
+        return data;
     }
 }
 

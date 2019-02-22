@@ -16,13 +16,13 @@ public class JavaSupportedTypes {
      * the type descriptor e.g. ("string", "Ljava/lang/String") etc.
      */
     private final Map<String, String> types = new ImmutableMap.Builder<String, String>()
-        .put("boolean", Type.getType(Boolean.class).getInternalName())
-        .put("integer", Type.getType(Integer.class).getInternalName())
-        .put("long", Type.getType(Long.class).getInternalName())
-        .put("double", Type.getType(Double.class).getInternalName())
-        .put("number", Type.getType(Number.class).getInternalName())
-        .put("string", Type.getType(String.class).getInternalName())
-        .put("timestamp", Type.getType(Timestamp.class).getInternalName())
+        .put("boolean", Type.getType(Boolean.class).getDescriptor())
+        .put("integer", Type.getType(Integer.class).getDescriptor())
+        .put("long", Type.getType(Long.class).getDescriptor())
+        .put("double", Type.getType(Double.class).getDescriptor())
+        .put("number", Type.getType(Number.class).getDescriptor())
+        .put("string", Type.getType(String.class).getDescriptor())
+        .put("timestamp", Type.getType(Timestamp.class).getDescriptor())
         .build();
 
     /**
