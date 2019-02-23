@@ -67,24 +67,17 @@ public class AppClassLoader extends ClassLoader {
     }
 
     @Override
-    public Class findClass(String className) throws ClassNotFoundException {
-        /* During class resolution, all classes that are dependencies of this class will be resolved
-         * and findClass called for each of those classes. Need to ensure that for such dependent
-         * classes we find the super findClass method rather than proceeding ahead with loading the
-         * bytes for the class from .class file.
-         */
+    protected Class<?> findClass(String className) throws ClassNotFoundException {
         if (!StringUtils.equals(this.className, className)) {
             return super.findClass(className);
         }
 
-        logger.info(String.format("Reloading class {%s} using App Class Loader", className));
+        logger.info(String.format("Reloading class %s using App class Loader", className));
 
-        Class result;
-
-        /* Check to see if the class has already been loaded by this class loader. If that is the case
-         * then return a cached copy.
+        /* Check to see if the class has already been loaded by this class loader. If that is the
+         * case then return a cached copy.
          */
-        result = cache.get(className);
+        Class result = cache.get(className);
         if (result != null) {
             logger
                 .info(String.format("Class %s already loaded. Returning cached instance", result));
@@ -98,7 +91,7 @@ public class AppClassLoader extends ClassLoader {
          * the words "java" e.g. "java.lang.String"
          */
         if (isProtected(className)) {
-            logger.error(String.format("Unable to load {%s} since it is part of protected domain"));
+            logger.error(String.format("Unable to load %s since it is part of protected domain"));
             return result;
         }
 
@@ -119,6 +112,36 @@ public class AppClassLoader extends ClassLoader {
         /* Cache for future reference */
         cache.put(className, result);
         return result;
+    }
+
+    @Override
+    protected Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
+        Class<?> result;
+
+        logger.info(String.format("Request to load %s using the App class loader", className));
+
+        if (!StringUtils.equals(this.className, className)) {
+            result = super.loadClass(className, resolve);
+        } else {
+            result = findClass(className);
+        }
+
+        /* Resolve class if required. This will link the class as per JVM specs */
+        if (resolve) {
+            resolveClass(result);
+        }
+
+        return result;
+    }
+
+    @Override
+    public Class<?> loadClass(String className) throws ClassNotFoundException {
+        /* Use existing class loading mechanism if class is not part of modified class */
+        if (!StringUtils.equals(this.className, className)) {
+            return super.loadClass(className);
+        }
+
+        return loadClass(className, true);
     }
 
     private boolean isProtected(String className) {

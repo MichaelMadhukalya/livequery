@@ -47,6 +47,7 @@ public class App implements INode {
 
     @Override
     public void terminate() {
+        /* Stop storage node */
     }
 
     private void basicConfig() {

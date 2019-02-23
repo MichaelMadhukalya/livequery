@@ -60,6 +60,7 @@ public class ClassModifier {
         try (FileOutputStream fileOutputStream = new FileOutputStream(
             new File(path.toAbsolutePath().toString()), false)) {
             fileOutputStream.write(data);
+            fileOutputStream.flush();
             success = true;
             logger.info(String
                 .format("Successfully updated file : {%s}", path.toAbsolutePath().toString()));

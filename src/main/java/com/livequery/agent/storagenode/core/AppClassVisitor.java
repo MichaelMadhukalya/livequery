@@ -86,18 +86,21 @@ public class AppClassVisitor extends ClassVisitor {
 
         /*
          * If the field exists in both Schema object as well as the Codec file then two cases are
-         * possible: either the field has a different type than the one specified in the Schema class,
-         * or the field has not been changed i.e. updated in the Codec file. In the first case, we
-         * update the field with the descriptor specified in the Codec file and the in the second case,
-         * we visit the field as it is. In both cases we remove the field from fieldDescriptorMappings.
+         * possible i.e. either the field's data type has not changed or the field has a different data
+         * type specified in the Codec file than the one originally specified in the Schema class.
+         * In the first case, we visit the field as is and in the second case we update the field
+         * with the data type specified in the Codec file. In both cases we remove the field from
+         * fieldDescriptorMappings so that it is no longer considered again.
          */
         String descriptor = (String) fieldDescriptorMappings.get(name);
         fieldDescriptorMappings.remove(name);
-        if (StringUtils.equalsIgnoreCase(descriptor, desc)) {
+        logger.info(String.format("Field:%s old type: %s new type: %s", name, desc, descriptor));
+
+        if (StringUtils.equals(descriptor, desc)) {
             return cv.visitField(access, name, desc, signature, value);
         }
 
-        return cv.visitField(access, name, descriptor, signature, value);
+        return cv.visitField(access, name, descriptor, signature, null);
     }
 
     @Override

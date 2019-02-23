@@ -9,11 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-public class Schema {
+public class Schema extends Object {
 
     @Property(name = "Customer")
     @Id(id = 1)
@@ -92,19 +93,19 @@ public class Schema {
     public Timestamp TimeStamp;
 
     /**
-     * Schema object fields along with default values will be stored in this map. Every time we want to
-     * compute the hashCode of an object of this class we will need to first ensure that this map has
-     * loaded all the dynamically created fields of this object. This is important since based on user
-     * provided codec file fields can be dynamically added/deleted from this class. However,
+     * Schema object fields along with default values will be stored in this map. Every time we want
+     * to compute the hashCode of an object of this class we will need to first ensure that this map
+     * has loaded all the dynamically created fields of this object. This is important since based
+     * on user provided codec file fields can be dynamically added/deleted from this class. However,
      * re-computing this map can be expensive and this can add prohibitively large cost to methods
      * such as <code>equals</code> or <code>hashCode</code>. Hence, this map should be pre-computed
      * after this class has been fully loaded by application class loader after taking into
      * consideration user fields provided inside the codec file.
      */
-    private final Map<String, Object> FIELDS = new HashMap<>();
+    private final Map<String, Object> __FIELDS__ = new HashMap<>();
 
     private void init() {
-        if (FIELDS.size() > 0) {
+        if (__FIELDS__.size() > 0) {
             return;
         }
 
@@ -115,7 +116,12 @@ public class Schema {
             try {
                 String name = f.getName();
                 Object value = f.get(this);
-                FIELDS.put(name, value);
+
+                /* Do not put a reference to itself */
+                if (StringUtils.equals(f.getName(), "__FIELDS__") || value instanceof Map) {
+                } else {
+                    __FIELDS__.put(name, value);
+                }
             } catch (IllegalAccessException e) {
                 /* This should never happen since all instance fields of model object are public */
             }
@@ -124,12 +130,12 @@ public class Schema {
 
     @Override
     public String toString() {
-        if (FIELDS.size() == 0) {
+        if (__FIELDS__.size() == 0) {
             init();
         }
 
         ToStringBuilder builder = new ToStringBuilder(this);
-        FIELDS.entrySet().stream().forEach(e -> builder.append(e.getKey(), e.getValue()));
+        __FIELDS__.entrySet().stream().forEach(e -> builder.append(e.getKey(), e.getValue()));
         return builder.toString();
     }
 
@@ -144,28 +150,28 @@ public class Schema {
             return false;
         }
 
-        if (FIELDS.size() == 0) {
+        if (__FIELDS__.size() == 0) {
             init();
         }
 
-        /* Init model so that all loaded fields become part of FIELDS map */
+        /* Init model so that all loaded fields become part of __FIELDS__ map */
         Schema arg = (Schema) that;
         arg.init();
 
         EqualsBuilder builder = new EqualsBuilder();
-        FIELDS.entrySet().stream()
-            .forEach(e -> builder.append(e.getValue(), arg.FIELDS.get(e.getKey())));
+        __FIELDS__.entrySet().stream()
+            .forEach(e -> builder.append(e.getValue(), arg.__FIELDS__.get(e.getKey())));
         return builder.isEquals();
     }
 
     @Override
     public int hashCode() {
-        if (FIELDS.size() == 0) {
+        if (__FIELDS__.size() == 0) {
             init();
         }
 
         HashCodeBuilder builder = new HashCodeBuilder(17, 37);
-        FIELDS.entrySet().stream().forEach(e -> builder.append(e.getValue()));
+        __FIELDS__.entrySet().stream().forEach(e -> builder.append(e.getValue()));
         return builder.toHashCode();
     }
 }
