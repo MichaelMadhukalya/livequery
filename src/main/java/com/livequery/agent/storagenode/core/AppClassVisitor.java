@@ -72,6 +72,11 @@ public class AppClassVisitor extends ClassVisitor {
     @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature,
         Object value) {
+        /* Ignore fields that are marked as special with names starting with an underscore */
+        if (StringUtils.startsWith(name, "_")) {
+            return cv.visitField(access, name, desc, signature, value);
+        }
+
         ++fieldsVisited;
 
         /* No transformation */
