@@ -116,10 +116,9 @@ public class AppClassLoader extends ClassLoader {
 
     @Override
     protected Class<?> loadClass(String className, boolean resolve) throws ClassNotFoundException {
-        Class<?> result;
-
         logger.info(String.format("Request to load %s using the App class loader", className));
 
+        Class<?> result;
         if (!StringUtils.equals(this.className, className)) {
             result = super.loadClass(className, resolve);
         } else {
