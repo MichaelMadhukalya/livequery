@@ -67,9 +67,9 @@ public class Environment {
     }
 
     /**
-     * This constructor should be called only once preferably when the system is getting initialized.
-     * The constructor takes a single input argument that points to root path of the application. The
-     * root path will be set using the -Dlivequery.root JVM property.
+     * This constructor should be called only once preferably when the system is getting
+     * initialized. The constructor takes a single input argument that points to root path of the
+     * application. The root path will be set using the -Dlivequery.root JVM property.
      */
     public Environment(String rootPath) {
         if (StringUtils.isNotEmpty(Environment.rootPath)) {
@@ -137,6 +137,10 @@ public class Environment {
 
     public String getClassPath() {
         return (String) properties.get("classpath");
+    }
+
+    public String getEncoding() {
+        return (String) properties.get("encoding");
     }
 
     private String getRootPath() {
