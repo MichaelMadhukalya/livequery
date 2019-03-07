@@ -143,6 +143,18 @@ public class Environment {
         return (String) properties.get("encoding");
     }
 
+    public int getHttpPort() {
+        return (int) properties.get("http.port");
+    }
+
+    public int getSecurePort() {
+        return (int) properties.get("https.port");
+    }
+
+    public int getMaxConcurrentHttpRequests() {
+        return (int) properties.get("max.http.requests");
+    }
+
     private String getRootPath() {
         return rootPath;
     }
