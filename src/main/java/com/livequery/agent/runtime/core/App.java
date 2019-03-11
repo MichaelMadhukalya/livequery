@@ -18,6 +18,16 @@ public class App implements INode {
     private static final Logger logger = Logger.getLogger(App.class.getSimpleName());
 
     /**
+     * Storage Node
+     */
+    private AbstractNode storageNode;
+
+    /**
+     * Http request processor
+     */
+    private HttpRequestProcessor httpRequestProcessor;
+
+    /**
      * No visibility outside this class
      */
     private App() {
@@ -41,13 +51,14 @@ public class App implements INode {
     @Override
     public void start() {
         /* Storage Node */
-        AbstractNode storageNode = new StorageNode();
+        storageNode = new StorageNode();
         storageNode.start();
     }
 
     @Override
     public void terminate() {
         /* Stop storage node */
+        storageNode.terminate();
     }
 
     private void basicConfig() {
@@ -65,8 +76,9 @@ public class App implements INode {
         /* Log OS level environment properties (these properties are immutable */
         System.getenv().entrySet()
             .forEach(e -> logger
-                .info(String.format("Environment (OS, Hardware) property found: (%s, %s)", e.getKey(),
-                    e.getValue())));
+                .info(
+                    String.format("Environment (OS, Hardware) property found: (%s, %s)", e.getKey(),
+                        e.getValue())));
 
         /* Log system properties (initialized as part of JVM args) */
         System.getProperties().entrySet()
