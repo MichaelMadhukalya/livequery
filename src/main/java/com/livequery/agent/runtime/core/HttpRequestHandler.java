@@ -24,7 +24,7 @@ class HttpRequestHandler implements Runnable {
     /**
      * Socket state
      */
-    private final Socket socket;
+    private Socket socket;
 
     /**
      * HTTP methods
@@ -77,20 +77,22 @@ class HttpRequestHandler implements Runnable {
             } finally {
                 /* Close streams */
                 if (null != in) {
-                    in.reset();
                     in.close();
+                    in = null;
                 }
 
                 if (null != out) {
                     out.close();
+                    out = null;
                 }
 
                 /* Close socket */
                 if (null != socket) {
                     socket.close();
+                    socket = null;
                 }
 
-                logger.debug(String.format("Closed socket and associated connection streams"));
+                logger.debug(String.format("Closed socket and associated IO connection streams"));
             }
         } catch (Exception e) {
             logger.error(String.format("Exception while Http request handling : {%s}", e));
@@ -146,7 +148,7 @@ class HttpRequestHandler implements Runnable {
         String method = request.method;
 
         HttpResponse response = new HttpResponse();
-        if (StringUtils.equalsIgnoreCase(method, METHODS[0])) {
+        if (StringUtils.isEmpty(method) || StringUtils.equalsIgnoreCase(method, METHODS[0])) {
             /* Fill response line */
             response.statusCode = 200;
             response.message = "OK";

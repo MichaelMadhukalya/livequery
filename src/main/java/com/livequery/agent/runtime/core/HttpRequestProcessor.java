@@ -11,6 +11,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
+/**
+ * <p>
+ * This class implements an <code>HttpRequestProcessor</code> that responds to Http requests from
+ * clients. Every time a new request is received, the request processor submits a new task to the
+ * existing thread pool. The size of the thread pool is pre-configured during <code>livequery</code>
+ * application environment start up as per defined in <code>.properties</code> file. Finally, the
+ * <code>post</code> method provides semantics for shutting down the thread pool in response to
+ * user initiated events such as: <code>SIGTERM</code> etc.
+ * <p>
+ * TODO: in future, we will migrate to a centralized thread pool capable of operating on async tasks
+ * rather than having thread pools managed by individual nodes/services. This will allow better
+ * utilization of OS resources.
+ * </p>
+ */
 public class HttpRequestProcessor extends AbstractNode {
 
     /**
