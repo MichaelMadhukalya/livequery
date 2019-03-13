@@ -4,15 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URL;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -37,6 +35,11 @@ class HttpRequestHandler implements Runnable {
     private static final Pattern HTTP_REQUEST_LINE = Pattern.compile("(.*)\\s+(.*)\\s+(.*)");
     private static final Pattern HTTP_HEADER_LINE = Pattern.compile("(.*):(.*)");
 
+    /**
+     * Newline
+     */
+    private static final String NEWLINE = "\n";
+
     public HttpRequestHandler(Socket socket) {
         this.socket = socket;
     }
@@ -55,8 +58,11 @@ class HttpRequestHandler implements Runnable {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintStream(socket.getOutputStream());
 
-                /* Fetch */
-                List<String> lines = in.lines().collect(Collectors.toList());
+                /* Fetch lines until stream is finished reading */
+                List<String> lines = new ArrayList<>();
+                while (in.ready()) {
+                    lines.add(in.readLine());
+                }
 
                 /* Decode */
                 HttpRequest request = decode(lines);
@@ -71,12 +77,20 @@ class HttpRequestHandler implements Runnable {
             } finally {
                 /* Close streams */
                 if (null != in) {
+                    in.reset();
                     in.close();
                 }
 
                 if (null != out) {
                     out.close();
                 }
+
+                /* Close socket */
+                if (null != socket) {
+                    socket.close();
+                }
+
+                logger.debug(String.format("Closed socket and associated connection streams"));
             }
         } catch (Exception e) {
             logger.error(String.format("Exception while Http request handling : {%s}", e));
@@ -95,15 +109,15 @@ class HttpRequestHandler implements Runnable {
                 /* if this is the first line then parse as per semantics of a request line */
                 if (requestLine) {
                     Matcher matcher = HTTP_REQUEST_LINE.matcher(s);
-                    if (matcher.find() && matcher.groupCount() >= 4) {
+                    if (matcher.find() && matcher.groupCount() >= 3) {
                         request.method = matcher.group(1);
-                        request.uri = new URL(matcher.group(2));
+                        request.path = matcher.group(2);
                         request.version = matcher.group(3);
                     }
                     requestLine = false;
                 } else if (headerLine) {
                     /* Header lines are separated from message body via an empty line */
-                    if (StringUtils.isEmpty(s)) {
+                    if (StringUtils.isEmpty(s) || StringUtils.equals(s, NEWLINE)) {
                         headerLine = false;
                         continue;
                     }
@@ -115,9 +129,9 @@ class HttpRequestHandler implements Runnable {
                     }
                 } else {
                     /* Every other line is considered part of message body */
-                    buffer.append(s).append('\n');
+                    buffer.append(s).append(NEWLINE);
                 }
-            } catch (MalformedURLException e) {
+            } catch (Exception e) {
                 logger.error(String.format("Exception parsing Http request headers : {%s}", e));
             }
         }
@@ -132,38 +146,40 @@ class HttpRequestHandler implements Runnable {
         String method = request.method;
 
         HttpResponse response = new HttpResponse();
-        if (StringUtils.equals(method, METHODS[0])) {
+        if (StringUtils.equalsIgnoreCase(method, METHODS[0])) {
             /* Fill response line */
             response.statusCode = 200;
             response.message = "OK";
 
-            /* Response headers */
-            response.headers
-                .put("Date: ", DateTimeFormatter.RFC_1123_DATE_TIME.format(Instant.now()));
-            response.headers.put("Server: ", "livequery/0.0.1");
-            response.headers
-                .put("Last-Modified: ", DateTimeFormatter.RFC_1123_DATE_TIME.format(Instant.now()));
-            response.headers.put("Content-Length: ", "2");
-            response.headers.put("Content-type: ", "text/plain");
-
             /* Response body */
             response.body = "OK";
+
+            /* Response headers */
+            response.headers
+                .put("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
+            response.headers.put("Server", "livequery/0.0.1");
+            response.headers
+                .put("Last-Modified",
+                    DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
+            response.headers.put("Content-Length", response.body.length());
+            response.headers.put("Content-type", "text/plain");
         } else {
             /* Fill response line */
             response.statusCode = 500;
             response.message = "Internal Server Error";
 
-            /* Response headers */
-            response.headers
-                .put("Date: ", DateTimeFormatter.RFC_1123_DATE_TIME.format(Instant.now()));
-            response.headers.put("Server: ", "livequery/0.0.1");
-            response.headers
-                .put("Last-Modified: ", DateTimeFormatter.RFC_1123_DATE_TIME.format(Instant.now()));
-            response.headers.put("Content-Length: ", "27");
-            response.headers.put("Content-type: ", "text/plain");
-
             /* Response body */
             response.body = "Internal Server Error (500)";
+
+            /* Response headers */
+            response.headers
+                .put("Date", DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
+            response.headers.put("Server", "livequery/0.0.1");
+            response.headers
+                .put("Last-Modified: ",
+                    DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.now()));
+            response.headers.put("Content-Length", response.body.length());
+            response.headers.put("Content-type", "text/plain");
         }
 
         logger.debug(String.format("Response: %s", response.toString()));
@@ -171,6 +187,7 @@ class HttpRequestHandler implements Runnable {
     }
 
     private void write(HttpResponse response, PrintStream out) {
-        out.print(response.toString());
+        out.println(response.toString());
+        out.flush();
     }
 }

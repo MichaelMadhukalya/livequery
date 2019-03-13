@@ -30,18 +30,15 @@ class HttpResponse {
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(String.format("%s %s %s", version, statusCode, message))
-            .append(NEWLINE);
+        buffer.append(String.format("%s %s %s", version, statusCode, message)).append(NEWLINE);
 
         headers.entrySet().forEach(e -> {
             String s = String.format("%s : %s", e.getKey(), e.getValue());
-            buffer.append(s)
-                .append(NEWLINE);
+            buffer.append(s).append(NEWLINE);
         });
 
         buffer.append(NEWLINE);
         buffer.append(body);
-        buffer.append(NEWLINE);
         return buffer.toString();
     }
 }

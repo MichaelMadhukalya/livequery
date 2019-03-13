@@ -53,12 +53,14 @@ public class App implements INode {
         /* Storage Node */
         storageNode = new StorageNode();
         storageNode.start();
+
+        /* Request processor */
+        httpRequestProcessor = new HttpRequestProcessor();
+        httpRequestProcessor.start();
     }
 
     @Override
     public void terminate() {
-        /* Stop storage node */
-        storageNode.terminate();
     }
 
     private void basicConfig() {

@@ -144,15 +144,15 @@ public class Environment {
     }
 
     public int getHttpPort() {
-        return (int) properties.get("http.port");
+        return Integer.parseInt((String) properties.get("http.port"));
     }
 
     public int getSecurePort() {
-        return (int) properties.get("https.port");
+        return Integer.parseInt((String) properties.get("https.port"));
     }
 
     public int getMaxConcurrentHttpRequests() {
-        return (int) properties.get("max.http.requests");
+        return Integer.parseInt((String) properties.get("max.http.requests"));
     }
 
     private String getRootPath() {

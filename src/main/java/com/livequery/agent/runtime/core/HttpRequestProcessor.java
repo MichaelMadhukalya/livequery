@@ -41,7 +41,14 @@ public class HttpRequestProcessor extends AbstractNode {
         this.portNum = portNum;
     }
 
-    public void process() {
+    @Override
+    public void run() {
+        process();
+    }
+
+    private void process() {
+        logger.info(String.format("Listening for connection at server socket : %d", portNum));
+
         try (ServerSocket serverSocket = new ServerSocket(portNum)) {
             /* Keep listening for new connections */
             while (true) {
@@ -65,14 +72,15 @@ public class HttpRequestProcessor extends AbstractNode {
         /* Reset port num if not set already */
         if (portNum == -1 || portNum < 1024) {
             portNum = environment.getHttpPort();
-            logger.info(String.format("Reseting http port number to : %d", portNum));
+            logger.info(String.format("Resetting http port number to : %d", portNum));
         }
     }
 
     @Override
     protected void post() {
+        /* Initiate shutdown on termination */
         try {
-            if (executorService.isShutdown()) {
+            if (!executorService.isShutdown()) {
                 /* initiate shutdown */
                 executorService.shutdown();
                 boolean shutDown = executorService.awaitTermination(60, TimeUnit.SECONDS);
