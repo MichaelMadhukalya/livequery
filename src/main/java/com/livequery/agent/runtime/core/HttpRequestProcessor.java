@@ -94,12 +94,16 @@ public class HttpRequestProcessor extends AbstractNode {
     protected void post() {
         /* Initiate shutdown on termination */
         try {
+            logger.info(String.format("Initiating shutdown of executor service"));
+
             if (!executorService.isShutdown()) {
                 /* initiate shutdown */
                 executorService.shutdown();
                 boolean shutDown = executorService.awaitTermination(60, TimeUnit.SECONDS);
 
                 if (!shutDown) {
+                    logger.warn(String.format("Executor service wasn't shutdown. Re-attempting."));
+
                     /* Shut down now */
                     List<?> tasks = executorService.shutdownNow();
                     logger.warn(String.format("Found %d tasks waiting when shutdown was initiated",
@@ -111,6 +115,8 @@ public class HttpRequestProcessor extends AbstractNode {
         } finally {
             if (!executorService.isTerminated()) {
                 logger.warn("Not all tasks completed successfully post shutdown of Http processor");
+            } else {
+                logger.info("Executor service has been shut down successfully");
             }
         }
     }

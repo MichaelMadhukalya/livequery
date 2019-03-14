@@ -61,6 +61,8 @@ public class App implements INode {
 
     @Override
     public void terminate() {
+        /* Shutdown request processor */
+        httpRequestProcessor.terminate();
     }
 
     private void basicConfig() {
