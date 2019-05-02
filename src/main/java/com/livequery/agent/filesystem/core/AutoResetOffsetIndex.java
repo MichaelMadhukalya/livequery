@@ -3,6 +3,11 @@ package com.livequery.agent.filesystem.core;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 
+/**
+ * This enum is used to indicate the offset index from where a consumer wants to start consuming the
+ * log file. By default it will be assumed that the consumer will start consuming data from the
+ * beginning of the log file.
+ */
 public enum AutoResetOffsetIndex {
     /**
      * Begin
@@ -38,7 +43,7 @@ public enum AutoResetOffsetIndex {
     }
 
     public AutoResetOffsetIndex get(int value) {
-        if (value != 0 && value != 1 && value != 2) {
+        if (value != BEGIN.value && value != END.value && value != CURRENT.value) {
             throw new IllegalArgumentException(
                 "Value provided for auto reset offset index is not valid");
         }
