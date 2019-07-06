@@ -2,7 +2,7 @@ package com.livequery.agent.filesystem.core;
 
 import java.util.concurrent.TimeUnit;
 
-public interface IFileChangeProcessor {
+public interface IFileChangeProcessor<E> {
 
     void poll();
 

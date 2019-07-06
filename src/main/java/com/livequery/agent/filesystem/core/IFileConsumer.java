@@ -7,7 +7,7 @@ public interface IFileConsumer<T> {
     /**
      * Default batch size in number of messages consumed
      */
-    final int DEFAULT_BATCH_SIZE = 500;
+    final int DEFAULT_BATCH_SIZE = 50;
 
     /**
      * Default batch size in KB
