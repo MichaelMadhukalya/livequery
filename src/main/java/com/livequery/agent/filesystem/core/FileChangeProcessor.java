@@ -60,7 +60,7 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
         while (true) {
             try {
                 isEmpty.await();
-                process();
+                consume();
                 isFull.signal();
             } catch (Exception e) {
                 logger.info(String.format("Exception while polling for file changes : {%s}", e));
@@ -81,7 +81,7 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
         return low.get() == high.get() && ic == MAX_SIZE;
     }
     
-    private void process() {
+    private void consume() {
         List<E> data = new ArrayList<>();
         
         int i = 0;
@@ -91,6 +91,7 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
             i++;
             ic--;
             
+            /* Reset pointer if required */
             if (low.get() == MAX_SIZE) {
                 low.set(low.get() % MAX_SIZE);
             }
