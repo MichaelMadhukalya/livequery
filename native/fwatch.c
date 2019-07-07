@@ -5,10 +5,36 @@
 #include <sys/inotify.h>
 #include <unistd.h>
 
-void handle (int fd, int *wd, const char *name)
+#ifndef MAX_BUFFER_SIZE
+#define MAX_BUFFER_SIZE 4096
+#endif
+
+/**
+ * Handle events from inotify file descriptor (fd). The watch descriptor (wd)
+ * indicates whether emitted events are related to the watched dir that we
+ * are listening for events. The third argument path specifies the watched
+ * dir path. Each successful read retuns a buffer that contains items having
+ * the following structure:
+ *
+ * struct inotify_event {
+ *     int wd;          // watch descriptor
+ *     uint32_t mask;   // Mask describing event
+ *     uint32_t cookie; // Unique cookie associating related events (rename(2))
+ *     uint32_t len;    // Size of name field
+ *     char name[];     // Optional null-terminated name
+ * }
+ *
+ * The last argument of the above structure indicates the name of the file
+ * inside the watched dir for which the watched event was emitted. For events
+ * that are only related to a dir this argument will be empty.
+ *
+ * More details about inotify events can be found here:
+ * http://man7.org/linux/man-pages/man7/inotify.7.html
+ */
+void handle (int fd, int *wd, const char *path)
 {
     /* Align buffer */
-    char buffer[4096]
+    char buffer[MAX_BUFFER_SIZE]
     __attribute__((aligned (__alignof__ (struct inotify_event))));
 
     const struct inotify_event *event;
@@ -19,7 +45,7 @@ void handle (int fd, int *wd, const char *name)
     for (;;)
     {
         /* Read events */
-        len = read (fd, buffer, 4096);
+        len = read (fd, buffer, MAX_BUFFER_SIZE);
         if (len == -1 && errno != EAGAIN)
         {
             perror ("Error reading inotify instances for events");
@@ -33,9 +59,20 @@ void handle (int fd, int *wd, const char *name)
         for (ptr = buffer; ptr < buffer + len;)
         {
             event = (const struct inotify_event *) ptr;
-            if ((event->wd == *wd) && (event->mask & IN_MODIFY))
+            if (event->wd == *wd)
             {
-                fprintf (stdout, "File %s modified", name);
+                if(event->name)
+                {
+		    /* File event */
+                    fprintf (stdout, 
+			"File %s event %d\n", event->name, event->mask);
+                }
+                else
+                {
+		    /* Dir event */
+                    fprintf(stdout, 
+			"Dir %s event %d\n",path, event->mask);
+                }
             }
 
             ptr += sizeof (struct inotify_event *) + event->len;
@@ -45,8 +82,7 @@ void handle (int fd, int *wd, const char *name)
 
 int main (int argc, char *argv[])
 {
-    fprintf (stdout, "start");
-    /* Only a single dir/file will be watched */
+    /* Only a single dir will be watched */
     int num_watched = 1;
 
     int *wd = malloc (sizeof (int) * num_watched);
@@ -64,13 +100,11 @@ int main (int argc, char *argv[])
     /* Check args */
     if (argc > 2)
     {
-        perror ("Only a single dir/file can be watched");
+        perror ("Only a single dir can be watched");
         exit (EXIT_FAILURE);
     }
 
-    fprintf (stdout, "hi");
-
-    /* Add watch descriptors with dir/file name to event mapping */
+    /* Add watch descriptors with dir name to event mapping */
     *wd = inotify_add_watch (fd, argv[1],
                              IN_ACCESS |
                              IN_ATTRIB |
@@ -87,14 +121,10 @@ int main (int argc, char *argv[])
     fds[0].fd = fd;
     fds[0].events = POLLIN;
 
-    fprintf (stdout, "here\n");
-
     while (1)
     {
         /* Start polling for events */
-        fprintf (stdout, "hello\n");
         int poll_num = poll (fds, nfds, -1);
-        fprintf (stdout, "%d", poll_num);
 
         if (poll_num == -1)
         {
@@ -114,7 +144,7 @@ int main (int argc, char *argv[])
         }
     }
 
-    return 0;
+    exit(EXIT_SUCCESS);
 }
 
 
