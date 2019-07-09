@@ -55,6 +55,11 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
         this.observer = fileChangeObserver;
     }
     
+    /**
+     * A native method (JNI) for polling a directory for change events
+     */
+    private native void dpoll();
+    
     @Override
     public void poll() {
         while (true) {

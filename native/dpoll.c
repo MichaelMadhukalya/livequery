@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #ifndef MAX_BUFFER_SIZE
-#define MAX_BUFFER_SIZE 4096
+    #define MAX_BUFFER_SIZE 4096
 #endif
 
 /**
