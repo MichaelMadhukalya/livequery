@@ -2,6 +2,8 @@ package com.livequery.agent.filesystem.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
@@ -49,10 +51,38 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
      */
     private int ic = 0;
     
+    /**
+     * Processor service pool
+     */
+    private ExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    
     public FileChangeProcessor(String filename, String groupName, Function<E[], Void> fileChangeObserver) {
         this.filename = filename;
         this.groupName = groupName;
         this.observer = fileChangeObserver;
+    }
+    
+    public void start() {
+        service.submit(this::process);
+    }
+    
+    public String getFilename() {
+        return filename;
+    }
+    
+    private void process() {
+        while (true) {
+            try {
+                if (full()) {
+                    isFull.await();
+                }
+                
+                /* Start polling */
+                dpoll();
+            } catch (Exception e) {
+                logger.info(String.format("Exception while trying to put file changes : {%s}", e));
+            }
+        }
     }
     
     /**
@@ -64,7 +94,9 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
     public void poll() {
         while (true) {
             try {
-                isEmpty.await();
+                if (empty()) {
+                    isEmpty.await();
+                }
                 consume();
                 isFull.signal();
             } catch (Exception e) {
@@ -84,6 +116,37 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
     
     private boolean full() {
         return low.get() == high.get() && ic == MAX_SIZE;
+    }
+    
+    private void produce(List<E> data) {
+        int i = 0;
+        
+        while (true) {
+            if (i == data.size()) {
+                break;
+            }
+            
+            try {
+                if (full()) {
+                    isFull.await();
+                }
+            } catch (Exception e) {
+                logger.info(String.format("Exception while await on a full buffer : {%s}", e));
+            }
+            
+            for (; !full() && i < data.size(); i++) {
+                int pos = high.getAndIncrement();
+                events[pos] = data.get(i);
+                ic++;
+                
+                if (high.get() == MAX_SIZE) {
+                    high.set(high.get() % MAX_SIZE);
+                }
+            }
+            
+            /* Signal to consumer */
+            isEmpty.signal();
+        }
     }
     
     private void consume() {
