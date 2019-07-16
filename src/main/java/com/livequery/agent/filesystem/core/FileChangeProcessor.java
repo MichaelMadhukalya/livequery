@@ -26,7 +26,7 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
     /**
      * Filename and consumer group name
      */
-    private final String filename;
+    private static String filename;
     private final String groupName;
     /**
      * Lock settings for managing change processor queue reads and writes via wait/notify
@@ -57,7 +57,7 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
     private ExecutorService service = Executors.newSingleThreadScheduledExecutor();
     
     public FileChangeProcessor(String filename, String groupName, Function<E[], Void> fileChangeObserver) {
-        this.filename = filename;
+        FileChangeProcessor.filename = filename;
         this.groupName = groupName;
         this.observer = fileChangeObserver;
     }
@@ -66,7 +66,7 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
         service.submit(this::process);
     }
     
-    public String getFilename() {
+    private String getFilename() {
         return filename;
     }
     
