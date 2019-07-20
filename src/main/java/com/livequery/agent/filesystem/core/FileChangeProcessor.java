@@ -1,6 +1,7 @@
 package com.livequery.agent.filesystem.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,6 +12,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProcessor {
     
@@ -118,8 +120,10 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
         return low.get() == high.get() && ic == MAX_SIZE;
     }
     
-    private void produce(List<E> data) {
+    private void produce(Object[] vals) {
         int i = 0;
+        
+        List<?> data = Arrays.stream(vals).collect(Collectors.toList());
         
         while (true) {
             if (i == data.size()) {
