@@ -2,7 +2,7 @@ package com.livequery.agent.filesystem.core;
 
 import org.apache.commons.lang3.StringUtils;
 
-class FileEvent {
+public class FileEvent {
     /**
      * File event related fields
      */
@@ -40,5 +40,24 @@ class FileEvent {
     
     public int getCookie() {
         return cookie;
+    }
+    
+    @Override
+    public String toString() {
+        return new StringBuffer()
+            .append("[")
+            .append(path)
+            .append(",")
+            .append(fileName)
+            .append(",")
+            .append(eventName)
+            .append(",")
+            .append(cookie)
+            .append(",")
+            .append(isDirEvent)
+            .append(",")
+            .append(isFileEvent)
+            .append("]")
+            .toString();
     }
 }

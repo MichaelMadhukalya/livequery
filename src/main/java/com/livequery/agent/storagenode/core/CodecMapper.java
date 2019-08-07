@@ -1,42 +1,41 @@
 package com.livequery.agent.storagenode.core;
 
 import com.google.common.collect.Maps;
-import com.livequery.agent.storagenode.core.CodecParser;
 import com.livequery.agent.storagenode.core.CodecParser.Status;
 import com.livequery.common.Environment;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Logger;
 
-class CodecMapper {
-
+public class CodecMapper {
+    
     /**
      * Logger
      */
     private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
-
+    
     /**
      * Internal state contains a file codec parser
      */
     final CodecParser codecParser;
-
+    
     /**
      * Mapper
      */
     final Map<? super String, ? super Object> mapper = new HashMap<>();
-
+    
     public CodecMapper() {
         this(new CodecParser(new Environment().getCodecFilePath()));
     }
-
+    
     public CodecMapper(String filename) {
         this(new CodecParser(filename));
     }
-
+    
     public CodecMapper(CodecParser codecParser) {
         this.codecParser = codecParser;
     }
-
+    
     public Map getCodecMapper() {
         if (mapper.size() != 0) {
             return mapper;
@@ -44,19 +43,19 @@ class CodecMapper {
         parse();
         return mapper;
     }
-
+    
     private int parse() {
         int lineCount = 0;
         Map<? super String, ? super Object> previous = mapper;
         Map<? super String, ? super Object> current = mapper;
-
+        
         while (true) {
             Status status = Status.EOF.getStatus(codecParser.next());
             ++lineCount;
-
+            
             String key = null;
             Object value = null;
-
+            
             /* Further processing of the codec file will be done on the basis of returned value */
             switch (status) {
                 case EOF:
@@ -87,31 +86,31 @@ class CodecMapper {
             }
             break;
         }
-
+        
         logger.info(String.format("Number of lines parsed from codec file : {%d}", lineCount));
         return lineCount;
     }
-
+    
     /**
      * Reset mapper so that the codec file can be parsed again
      */
     public void reset() {
         mapper.clear();
     }
-
+    
     public Map<String, Object> getSchema() {
         if (mapper.size() == 0) {
             parse();
         }
-
+        
         logger.info(String.format("Number of entries found in Codec file : {%d}", mapper.size()));
-
+        
         Object object = mapper.get("Fields");
         if (!(object instanceof Map)) {
             logger.error("Unable to find field mappings for user provided Schema");
             return Maps.newHashMap();
         }
-
+        
         return (Map) object;
     }
 }

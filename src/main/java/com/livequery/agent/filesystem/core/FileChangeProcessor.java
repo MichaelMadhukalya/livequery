@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProcessor {
+public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Runnable {
     
     /**
      * Change processor queue max size
@@ -37,9 +37,9 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
     private final Condition isEmpty = lock.newCondition();
     private final Condition isFull = lock.newCondition();
     /**
-     * File change processor observer
+     * File change processor consumer
      */
-    private final Function<E[], Void> observer;
+    private final Function<Object[], Void> consumer;
     /**
      * Batch size of items processed
      */
@@ -58,13 +58,14 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
      */
     private ExecutorService service = Executors.newSingleThreadScheduledExecutor();
     
-    public FileChangeProcessor(String filename, String groupName, Function<E[], Void> fileChangeObserver) {
-        FileChangeProcessor.filename = filename;
+    public FileChangeProcessor(String fileName, String groupName, Function<Object[], Void> consumer) {
+        FileChangeProcessor.filename = fileName;
         this.groupName = groupName;
-        this.observer = fileChangeObserver;
+        this.consumer = consumer;
     }
     
-    public void start() {
+    @Override
+    public void run() {
         service.submit(this::process);
     }
     
@@ -154,12 +155,12 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
     }
     
     private void consume() {
-        List<E> data = new ArrayList<>();
+        List<FileEvent> data = new ArrayList<>();
         
         int i = 0;
         while (!empty() && i < BATCH_SIZE) {
             int pos = low.getAndIncrement();
-            data.add((E) events[pos]);
+            data.add((FileEvent) events[pos]);
             i++;
             ic--;
             
@@ -169,6 +170,6 @@ public class FileChangeProcessor<E extends FileEvent> implements IFileChangeProc
             }
         }
         
-        observer.apply((E[]) data.toArray());
+        consumer.apply((FileEvent[]) data.toArray());
     }
 }
