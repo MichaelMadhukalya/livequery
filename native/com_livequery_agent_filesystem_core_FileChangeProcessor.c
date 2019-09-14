@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <poll.h>
 #include <sys/inotify.h>
@@ -11,23 +12,30 @@
 #include "file_event.h"
 
 #ifndef MAX_BUFFER_SIZE
-#define MAX_BUFFER_SIZE 4096
+  #define MAX_BUFFER_SIZE 4096
 #endif
 
 #ifndef MAX_EVENT_SIZE
-#define MAX_EVENT_SIZE 10
+  #define MAX_EVENT_SIZE 10
 #endif
 
+#ifndef NUM_WATCHED_DIR
+  #define NUM_WATCHED_DIR 1
+#endif
+
+/* initialization */
+static bool is_init = true;
+
 /* Watched directory path */
-static char* path = NULL;
+static char path [4096];
 
 /* File descriptor and watched descriptor for inotify */
 static int fd;
 static int* wd;
 
 /* Additional inotify structures */
-static nfds_t nfds = 1;
-struct pollfd fds[1];
+static nfds_t nfds = NUM_WATCHED_DIR;
+static struct pollfd fds[NUM_WATCHED_DIR];
 
 /* Align buffer */
 char buffer[MAX_BUFFER_SIZE]
@@ -80,8 +88,9 @@ char* get_event_name(uint32_t mask)
 
 void flush_buffer()
 {
-    for(char* ptr = buffer; ptr < buffer + MAX_BUFFER_SIZE; ptr++)
-        *ptr = '\0';
+    char* ptr = buffer;
+    while(ptr < buffer + MAX_BUFFER_SIZE)
+        *ptr++ = '\0';
 }
 
 void call_Java_producer(JNIEnv* env, jobject thisObj, jobjectArray objArr)
@@ -101,7 +110,7 @@ void call_Java_producer(JNIEnv* env, jobject thisObj, jobjectArray objArr)
     flush_buffer();
 }
 
-void handle (JNIEnv* env, jobject thisObj)
+void handle (JNIEnv* env, jobject thisObj, struct pollfd* fds, int* wd)
 {
     const struct inotify_event *event;
 
@@ -116,7 +125,8 @@ void handle (JNIEnv* env, jobject thisObj)
     for (;;)
     {
         /* Read events */
-        len = read (fd, buffer, MAX_BUFFER_SIZE);
+        len = read (fds[0].fd, buffer, MAX_BUFFER_SIZE);
+
         if (len == -1 && errno != EAGAIN)
         {
             perror ("Error reading inotify instances for events");
@@ -144,6 +154,7 @@ void handle (JNIEnv* env, jobject thisObj)
                     perror("Unable to get constructor reference");
                     exit (EXIT_FAILURE);
                 }
+
                 jobject object = (*env)->NewObject(env, cls, methodId, path, event->name, get_event_name(event->mask));
                 (*env)->SetObjectArrayElement(env, objArr, i++, object);
             }
@@ -152,14 +163,14 @@ void handle (JNIEnv* env, jobject thisObj)
         }
 
         call_Java_producer(env, thisObj, objArr);
-        return;
+        break;
     }
 }
 
 void init(JNIEnv* env, jobject thisObj)
 {
-    /* If path is set then return */
-    if(path != NULL)
+    /* If already initialized then return */
+    if(is_init == false)
         return;
 
     jclass cls = (*env)->GetObjectClass(env, thisObj);
@@ -191,7 +202,7 @@ void init(JNIEnv* env, jobject thisObj)
     }
 
     /* Add watch descriptors with dir name to event mapping */
-    wd = malloc(sizeof(int));
+    wd = malloc(sizeof(int) * NUM_WATCHED_DIR);
     *wd = inotify_add_watch (fd, path,
                              IN_ACCESS |
                              IN_ATTRIB |
@@ -204,37 +215,40 @@ void init(JNIEnv* env, jobject thisObj)
                              IN_MOVE_SELF |
                              IN_MOVED_FROM |
                              IN_MOVED_TO |
-                             IN_OPEN);
+                             IN_OPEN |
+                             IN_Q_OVERFLOW |
+                             IN_UNMOUNT);
 
     /* Create file descriptors for polling */
     fds[0].fd = fd;
     fds[0].events = POLLIN;
+
+    /* init */
+    is_init = false;
 }
 
 JNIEXPORT void JNICALL Java_com_livequery_agent_filesystem_core_FileChangeProcessor_dpoll
 (JNIEnv* env, jobject thisObj)
 {
-    while (1)
+    /* init */
+    init(env, thisObj);
+
+    /* start polling */
+    int poll_num = poll (fds, nfds, -1);
+
+    if (poll_num == -1)
     {
-        /* Start polling for events */
-        int poll_num = poll (fds, nfds, -1);
+        if (errno == EINTR)
+            //continue;
+        perror ("Polling error while polling inotify instance");
+        exit (EXIT_FAILURE);
+    }
 
-        if (poll_num == -1)
+    if (poll_num > 0)
+    {
+        if (fds[0].revents & POLLIN)
         {
-            if (errno == EINTR)
-                continue;
-            perror ("Polling error while polling inotify instance");
-            exit (EXIT_FAILURE);
-        }
-
-        if (poll_num > 0)
-        {
-            if (fds[0].revents & POLLIN)
-            {
-                /* Handle new set of events for watched descriptors */
-                handle (env, thisObj);
-                return;
-            }
+            handle (env, thisObj, fds, wd);
         }
     }
 

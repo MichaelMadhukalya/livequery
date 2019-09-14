@@ -3,6 +3,7 @@ package com.livequery.agent.filesystem.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -11,8 +12,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.apache.log4j.Logger;
 
 public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Runnable {
     
@@ -58,10 +59,16 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
      */
     private ExecutorService service = Executors.newSingleThreadScheduledExecutor();
     
-    public FileChangeProcessor(String fileName, String groupName, Function<Object[], Void> consumer) {
+    /**
+     * Cyclic barrier for synchronization with invoking (parent) thread
+     */
+    private final CyclicBarrier cyclicBarrier;
+    
+    public FileChangeProcessor(String fileName, String groupName, Function<Object[], Void> consumer, CyclicBarrier cyclicBarrier) {
         FileChangeProcessor.filename = fileName;
         this.groupName = groupName;
         this.consumer = consumer;
+        this.cyclicBarrier = cyclicBarrier;
     }
     
     @Override
@@ -69,11 +76,14 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         service.submit(this::process);
     }
     
-    private String getFilename() {
+    private String getFileName() {
         return filename;
     }
     
     private void process() {
+        boolean isError = false;
+        logger.debug(String.format("Polling %s dir to watch for change events", filename));
+        
         while (true) {
             try {
                 if (full()) {
@@ -81,9 +91,21 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
                 }
                 
                 /* Start polling */
+                logger.debug(String.format("Start polling watched dir for changed events"));
                 dpoll();
+                logger.debug(String.format("End polling watched dir for changed events"));
             } catch (Exception e) {
-                logger.info(String.format("Exception while trying to put file changes : {%s}", e));
+                logger.warn(String.format("Exception while trying to add file changes : {%s}", e));
+                isError = true;
+            } finally {
+                /* Check for error in adding polling info */
+                if (isError) {
+                    try {
+                        cyclicBarrier.await();
+                    } catch (Exception e) {
+                        logger.error(String.format("Exception encountered while awaiting on barrier : {%s}", e));
+                    }
+                }
             }
         }
     }
@@ -121,10 +143,11 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         return low.get() == high.get() && ic == MAX_SIZE;
     }
     
-    private void produce(Object[] vals) {
+    public void produce(Object[] vals) {
         int i = 0;
         
         List<?> data = Arrays.stream(vals).collect(Collectors.toList());
+        logger.info(String.format("Number of change events received from native code : {%d}", data == null ? 0 : data.size()));
         
         while (true) {
             if (i == data.size()) {
@@ -154,7 +177,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         }
     }
     
-    private void consume() {
+    public void consume() {
         List<FileEvent> data = new ArrayList<>();
         
         int i = 0;

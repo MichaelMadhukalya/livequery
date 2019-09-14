@@ -55,6 +55,7 @@ public class App implements INode {
     
     @Override
     public void start() {
+        /* Start */
         logger.info(String.format("Starting initialization of livequery components"));
         
         /* Storage Node */
@@ -72,6 +73,7 @@ public class App implements INode {
         fileChangeConsumer.start();
         logger.info(String.format("Initialized livequery file change consumer component"));
         
+        /* End */
         logger.info(String.format("Successfully initialized all livequery components"));
     }
     

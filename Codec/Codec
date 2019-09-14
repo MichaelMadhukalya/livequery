@@ -1,5 +1,5 @@
 # Data Source Name
-DataSourceName = /var/log/application.log
+DataSourceName = /home/michael/env/demo/var/log/application.log
 
 # Name of fields with associated data type
 Fields :
