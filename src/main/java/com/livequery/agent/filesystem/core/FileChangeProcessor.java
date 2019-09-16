@@ -183,7 +183,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         List<?> data = Arrays.stream(vals).collect(Collectors.toList());
         logger.info(String.format("Number of change events received from native code : {%d}", data == null ? 0 : data.size()));
         
-        for (int i = 0; !full() && i < data.size(); i++) {
+        for (int i = 0; i < data.size(); i++) {
             try {
                 if (full()) {
                     /** Await while input buffer is full */
