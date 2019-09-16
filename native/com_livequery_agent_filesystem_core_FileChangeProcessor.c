@@ -12,15 +12,15 @@
 #include "file_event.h"
 
 #ifndef MAX_BUFFER_SIZE
-  #define MAX_BUFFER_SIZE 4096
+#define MAX_BUFFER_SIZE 4096
 #endif
 
 #ifndef MAX_EVENT_SIZE
-  #define MAX_EVENT_SIZE 10
+#define MAX_EVENT_SIZE 10
 #endif
 
 #ifndef NUM_WATCHED_DIR
-  #define NUM_WATCHED_DIR 1
+#define NUM_WATCHED_DIR 1
 #endif
 
 /* initialization */
@@ -240,7 +240,7 @@ JNIEXPORT void JNICALL Java_com_livequery_agent_filesystem_core_FileChangeProces
     {
         if (errno == EINTR)
             //continue;
-        perror ("Polling error while polling inotify instance");
+            perror ("Polling error while polling inotify instance");
         exit (EXIT_FAILURE);
     }
 

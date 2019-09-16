@@ -3,6 +3,8 @@ package com.livequery.agent.filesystem.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,12 +22,12 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     /**
      * Change processor queue max size
      */
-    private static final int MAX_SIZE = 4096;
+    private static final int MAX_BUFFER_SIZE = 4096;
     /**
      * Logger
      */
     private final Logger logger = Logger.getLogger(FileChangeProcessor.class.getName());
-    private final Object[] events = new Object[MAX_SIZE];
+    private final Object[] events = new Object[MAX_BUFFER_SIZE];
     /**
      * Filename and consumer group name
      */
@@ -52,12 +54,18 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     /**
      * Item count
      */
-    private int ic = 0;
+    private int itemCount = 0;
     
     /**
      * Processor service pool
      */
-    private ExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private static final int NUMBER_OF_THREADS = 2;
+    private ExecutorService service = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+    
+    /**
+     * Synchronize between caller thread and the producer and consumer
+     */
+    private final CountDownLatch latch = new CountDownLatch(NUMBER_OF_THREADS + 1);
     
     /**
      * Cyclic barrier for synchronization with invoking (parent) thread
@@ -74,6 +82,20 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     @Override
     public void run() {
         service.submit(this::process);
+        service.submit(this::poll);
+        
+        try {
+            /* Await completion */
+            latch.countDown();
+            latch.await();
+            
+            /* Synchronize with parent through barrier synchronization */
+            cyclicBarrier.await();
+        } catch (InterruptedException e) {
+            logger.error(String.format("Exception while awaiting task completion : {%s}", e));
+        } catch (BrokenBarrierException e) {
+            logger.error(String.format("Broken barrier exception encountered : {%s}", e));
+        }
     }
     
     private String getFileName() {
@@ -82,31 +104,28 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     
     private void process() {
         boolean isError = false;
-        logger.debug(String.format("Polling %s dir to watch for change events", filename));
+        logger.debug(String.format("Processing %s dir to watch for change events", filename));
         
         while (true) {
             try {
-                if (full()) {
-                    isFull.await();
-                }
-                
-                /* Start polling */
-                logger.debug(String.format("Start polling watched dir for changed events"));
+                /* Start processing dir for changed events */
+                logger.debug(String.format("Start processing watched dir for changed events"));
                 dpoll();
-                logger.debug(String.format("End polling watched dir for changed events"));
+                logger.debug(String.format("End processing watched dir for changed events"));
             } catch (Exception e) {
                 logger.warn(String.format("Exception while trying to add file changes : {%s}", e));
                 isError = true;
             } finally {
-                /* Check for error in adding polling info */
+                /* Check error */
                 if (isError) {
-                    try {
-                        cyclicBarrier.await();
-                    } catch (Exception e) {
-                        logger.error(String.format("Exception encountered while awaiting on barrier : {%s}", e));
-                    }
+                    latch.countDown();
+                    return;
                 }
             }
+            
+            /* Signal consumer */
+            isEmpty.signal();
+            logger.debug(String.format("Signal to consumer awaiting on changed events"));
         }
     }
     
@@ -117,15 +136,32 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     
     @Override
     public void poll() {
+        boolean isError = false;
+        logger.debug(String.format("Starting to poll %s directory for change events", filename));
+        
         while (true) {
             try {
                 if (empty()) {
+                    /* Wait if queue is empty */
+                    logger.debug(String.format("Waiting until changed events are available"));
                     isEmpty.await();
                 }
+                
+                logger.debug(String.format("Events are available for watched dir, start consuming..."));
                 consume();
+                
+                /* Signal producer */
                 isFull.signal();
+                logger.debug(String.format("Producer notified to start watching for change events"));
             } catch (Exception e) {
+                isError = true;
                 logger.info(String.format("Exception while polling for file changes : {%s}", e));
+            } finally {
+                /* Exit if error */
+                if (isError) {
+                    latch.countDown();
+                    break;
+                }
             }
         }
     }
@@ -136,63 +172,59 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     }
     
     private boolean empty() {
-        return low.get() == high.get() && ic == 0;
+        return low.get() == high.get() && itemCount == 0;
     }
     
     private boolean full() {
-        return low.get() == high.get() && ic == MAX_SIZE;
+        return low.get() == high.get() && itemCount == MAX_BUFFER_SIZE;
     }
     
     public void produce(Object[] vals) {
-        int i = 0;
-        
         List<?> data = Arrays.stream(vals).collect(Collectors.toList());
         logger.info(String.format("Number of change events received from native code : {%d}", data == null ? 0 : data.size()));
         
-        while (true) {
-            if (i == data.size()) {
-                break;
-            }
-            
+        for (int i = 0; !full() && i < data.size(); i++) {
             try {
                 if (full()) {
+                    /** Await while input buffer is full */
+                    logger.debug(String.format("Awaiting on full input buffer. Capacity : {%s}", MAX_BUFFER_SIZE));
                     isFull.await();
                 }
             } catch (Exception e) {
-                logger.info(String.format("Exception while await on a full buffer : {%s}", e));
+                logger.info(String.format("Exception while awaiting on a full buffer : {%s}", e));
             }
             
-            for (; !full() && i < data.size(); i++) {
-                int pos = high.getAndIncrement();
-                events[pos] = data.get(i);
-                ic++;
-                
-                if (high.get() == MAX_SIZE) {
-                    high.set(high.get() % MAX_SIZE);
-                }
-            }
+            int pos = high.getAndIncrement();
+            events[pos] = data.get(i);
+            itemCount++;
             
-            /* Signal to consumer */
-            isEmpty.signal();
+            if (high.get() == MAX_BUFFER_SIZE) {
+                high.set(high.get() % MAX_BUFFER_SIZE);
+            }
         }
     }
     
     public void consume() {
         List<FileEvent> data = new ArrayList<>();
         
-        int i = 0;
-        while (!empty() && i < BATCH_SIZE) {
+        for (int i = 0; i < BATCH_SIZE; i++) {
+            /* Return on empty buffer */
+            if (empty()) {
+                return;
+            }
+            
             int pos = low.getAndIncrement();
             data.add((FileEvent) events[pos]);
-            i++;
-            ic--;
+            itemCount--;
             
             /* Reset pointer if required */
-            if (low.get() == MAX_SIZE) {
-                low.set(low.get() % MAX_SIZE);
+            if (low.get() == MAX_BUFFER_SIZE) {
+                low.set(low.get() % MAX_BUFFER_SIZE);
             }
         }
         
-        consumer.apply((FileEvent[]) data.toArray());
+        if (data.size() > 0) {
+            consumer.apply((FileEvent[]) data.toArray());
+        }
     }
 }

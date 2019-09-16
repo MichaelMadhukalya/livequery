@@ -5,7 +5,11 @@ import com.livequery.common.AbstractNode;
 import com.livequery.common.Environment;
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -21,7 +25,7 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
      */
     private static final String NATIVE_LIB_NAME = "poll";
     
-    /** Load native libaray */
+    /** Load native library */
     static {
         System.loadLibrary(NATIVE_LIB_NAME);
     }
@@ -38,7 +42,12 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
     
     /* Cyclic barrier for synchronization across threads */
     private static final int NUM_OF_THREADS = 2;
-    private final CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_OF_THREADS);
+    private final CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_OF_THREADS, this::action);
+    
+    /**
+     * Executor service
+     */
+    private ExecutorService service = Executors.newSingleThreadExecutor();
     
     @Override
     protected void pre() {
@@ -46,6 +55,33 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
     
     @Override
     protected void post() {
+        /* Initiate shutdown on termination */
+        try {
+            logger.info(String.format("Initiating shutdown of executor service"));
+            
+            if (!service.isShutdown()) {
+                /* initiate shutdown */
+                service.shutdown();
+                boolean shutDown = service.awaitTermination(60, TimeUnit.SECONDS);
+                
+                if (!shutDown) {
+                    logger.warn(String.format("Executor service wasn't shutdown. Re-attempting."));
+                    
+                    /* Shut down now */
+                    List<?> tasks = service.shutdownNow();
+                    logger.warn(String.format("Found %d tasks waiting when shutdown was initiated",
+                        tasks != null ? tasks.size() : 0));
+                }
+            }
+        } catch (InterruptedException e) {
+            logger.error(String.format("Exception shuting down service for Http requests:{%s}", e));
+        } finally {
+            if (!service.isTerminated()) {
+                logger.warn("Not all tasks completed successfully post shutdown of Http processor");
+            } else {
+                logger.info("Executor service has been shut down successfully");
+            }
+        }
     }
     
     public FileChangeConsumer() {
@@ -77,13 +113,13 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
             return null;
         };
         
-        /* Create watched directory observer */
-        fileChangeProcessor = new FileChangeProcessor(dataSourceName, StringUtils.EMPTY, process, cyclicBarrier);
-        
-        /* Start observing watched dir for changes */
-        new Thread(fileChangeProcessor).start();
-        
         try {
+            /* Create watched directory observer */
+            fileChangeProcessor = new FileChangeProcessor(dataSourceName, StringUtils.EMPTY, process, cyclicBarrier);
+            
+            /* Start observing watched dir for changes */
+            service.submit(fileChangeProcessor);
+            
             /* Barrier await */
             cyclicBarrier.await();
         } catch (Exception e) {
@@ -107,5 +143,9 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
         } else {
             return getWatchedDir(file.getParent());
         }
+    }
+    
+    public void action() {
+        post();
     }
 }
