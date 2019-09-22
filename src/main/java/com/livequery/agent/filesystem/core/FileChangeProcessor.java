@@ -72,6 +72,11 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
      */
     private final CyclicBarrier cyclicBarrier;
     
+    /**
+     * Events
+     */
+    private final List<FileEvent> data = new ArrayList<>();
+    
     public FileChangeProcessor(String fileName, String groupName, Function<Object[], Void> consumer, CyclicBarrier cyclicBarrier) {
         FileChangeProcessor.filename = fileName;
         this.groupName = groupName;
@@ -107,25 +112,29 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         logger.debug(String.format("Processing %s dir to watch for change events", filename));
         
         while (true) {
+            lock.lock();
+            
             try {
                 /* Start processing dir for changed events */
                 logger.debug(String.format("Start processing watched dir for changed events"));
                 dpoll();
                 logger.debug(String.format("End processing watched dir for changed events"));
+                
+                /* Signal consumer */
+                isEmpty.signal();
+                logger.debug(String.format("Consumer notified awaiting on changed events"));
+                isFull.await();
             } catch (Exception e) {
-                logger.warn(String.format("Exception while trying to add file changes : {%s}", e));
+                logger.warn(String.format("Exception while trying to add file changes : %s", e));
                 isError = true;
             } finally {
                 /* Check error */
                 if (isError) {
                     latch.countDown();
-                    return;
+                    lock.unlock();
+                    break;
                 }
             }
-            
-            /* Signal consumer */
-            isEmpty.signal();
-            logger.debug(String.format("Signal to consumer awaiting on changed events"));
         }
     }
     
@@ -140,11 +149,15 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         logger.debug(String.format("Starting to poll %s directory for change events", filename));
         
         while (true) {
+            lock.lock();
+            
             try {
                 if (empty()) {
-                    /* Wait if queue is empty */
+                    /* Wait if queue is empty after signalling producer */
+                    isFull.signal();
                     logger.debug(String.format("Waiting until changed events are available"));
                     isEmpty.await();
+                    lock.lock();
                 }
                 
                 logger.debug(String.format("Events are available for watched dir, start consuming..."));
@@ -153,13 +166,15 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
                 /* Signal producer */
                 isFull.signal();
                 logger.debug(String.format("Producer notified to start watching for change events"));
+                isEmpty.await();
             } catch (Exception e) {
                 isError = true;
-                logger.info(String.format("Exception while polling for file changes : {%s}", e));
+                logger.info(String.format("Exception while polling for file changes : %s", e));
             } finally {
                 /* Exit if error */
                 if (isError) {
                     latch.countDown();
+                    lock.unlock();
                     break;
                 }
             }
@@ -181,7 +196,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     
     public void produce(Object[] vals) {
         List<?> data = Arrays.stream(vals).collect(Collectors.toList());
-        logger.info(String.format("Number of change events received from native code : {%d}", data == null ? 0 : data.size()));
+        logger.info(String.format("Number of change events received : {%d}", data == null ? 0 : data.size()));
         
         for (int i = 0; i < data.size(); i++) {
             try {
@@ -189,6 +204,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
                     /** Await while input buffer is full */
                     logger.debug(String.format("Awaiting on full input buffer. Capacity : {%s}", MAX_BUFFER_SIZE));
                     isFull.await();
+                    lock.lock();
                 }
             } catch (Exception e) {
                 logger.info(String.format("Exception while awaiting on a full buffer : {%s}", e));
@@ -205,8 +221,6 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     }
     
     public void consume() {
-        List<FileEvent> data = new ArrayList<>();
-        
         for (int i = 0; i < BATCH_SIZE; i++) {
             /* Return on empty buffer */
             if (empty()) {
@@ -225,6 +239,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         
         if (data.size() > 0) {
             consumer.apply((FileEvent[]) data.toArray());
+            data.clear();
         }
     }
 }

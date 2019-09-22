@@ -239,9 +239,10 @@ JNIEXPORT void JNICALL Java_com_livequery_agent_filesystem_core_FileChangeProces
     if (poll_num == -1)
     {
         if (errno == EINTR)
-            //continue;
-            perror ("Polling error while polling inotify instance");
-        exit (EXIT_FAILURE);
+        {
+            perror ("Error while polling for inotify instance");
+            exit (EXIT_FAILURE);
+        }
     }
 
     if (poll_num > 0)
@@ -251,8 +252,6 @@ JNIEXPORT void JNICALL Java_com_livequery_agent_filesystem_core_FileChangeProces
             handle (env, thisObj, fds, wd);
         }
     }
-
-    exit(EXIT_SUCCESS);
 }
 
 
