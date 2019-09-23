@@ -217,7 +217,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
             }
         }
         
-        logger.debug(String.format("Number of items in events queue : %d. Low = %d, high = %d", itemCount, low.get(), high.get()));
+        logger.debug(String.format("Items in events queue : %d. Low = %d, high = %d", itemCount, low.get(), high.get()));
     }
     
     public void consume() {
@@ -228,7 +228,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
             try {
                 if (empty()) {
                     /* Await while input buffer is empty */
-                    logger.debug(String.format("No messages found in event buffer.Low = %d, high = %d", low.get(), high.get()));
+                    logger.debug(String.format("No messages in event queue.Low = %d, high = %d", low.get(), high.get()));
                     isFull.signal();
                     isEmpty.await();
                     lock.lock();
@@ -254,6 +254,6 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
             consumer.apply((FileEvent[]) cache.toArray());
         }
         
-        logger.debug(String.format("Number of items consumed %d and remaining in events queue %d", consumed, itemCount));
+        logger.debug(String.format("Items consumed %d and remaining in events queue %d", consumed, itemCount));
     }
 }
