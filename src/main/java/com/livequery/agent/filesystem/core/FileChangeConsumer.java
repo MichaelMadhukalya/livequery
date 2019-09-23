@@ -110,7 +110,15 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
     public void run() {
         Function<Object[], Void> process = events -> {
             consumeBatch(events);
-            return null;
+            
+            Void instance = null;
+            try {
+                instance = Void.TYPE.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                logger.debug(String.format("Exception while instantiating void return type : {%s}", e));
+            }
+            
+            return instance;
         };
         
         try {

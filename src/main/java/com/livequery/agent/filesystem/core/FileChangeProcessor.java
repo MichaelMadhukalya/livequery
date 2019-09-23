@@ -22,12 +22,12 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     /**
      * Change processor queue max size
      */
-    private static final int MAX_BUFFER_SIZE = 4096;
+    private static final int CAPACITY = 4096;
     /**
      * Logger
      */
     private final Logger logger = Logger.getLogger(FileChangeProcessor.class.getName());
-    private final Object[] events = new Object[MAX_BUFFER_SIZE];
+    private final Object[] events = new Object[CAPACITY];
     /**
      * Filename and consumer group name
      */
@@ -72,11 +72,6 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
      */
     private final CyclicBarrier cyclicBarrier;
     
-    /**
-     * Events
-     */
-    private final List<FileEvent> data = new ArrayList<>();
-    
     public FileChangeProcessor(String fileName, String groupName, Function<Object[], Void> consumer, CyclicBarrier cyclicBarrier) {
         FileChangeProcessor.filename = fileName;
         this.groupName = groupName;
@@ -109,7 +104,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     
     private void process() {
         boolean isError = false;
-        logger.debug(String.format("Processing %s dir to watch for change events", filename));
+        logger.debug(String.format("Processing %s dir to watch for changed events", filename));
         
         while (true) {
             lock.lock();
@@ -125,6 +120,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
                 logger.debug(String.format("Consumer notified awaiting on changed events"));
                 isFull.await();
             } catch (Exception e) {
+                e.printStackTrace();
                 logger.warn(String.format("Exception while trying to add file changes : %s", e));
                 isError = true;
             } finally {
@@ -157,15 +153,15 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
                     isFull.signal();
                     logger.debug(String.format("Waiting until changed events are available"));
                     isEmpty.await();
-                    lock.lock();
+                    continue;
                 }
                 
-                logger.debug(String.format("Events are available for watched dir, start consuming..."));
+                logger.debug(String.format("Events are available for watched dir, consuming..."));
                 consume();
                 
                 /* Signal producer */
                 isFull.signal();
-                logger.debug(String.format("Producer notified to start watching for change events"));
+                logger.debug(String.format("Producer notified to start watching for changed events"));
                 isEmpty.await();
             } catch (Exception e) {
                 isError = true;
@@ -191,55 +187,73 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     }
     
     private boolean full() {
-        return low.get() == high.get() && itemCount == MAX_BUFFER_SIZE;
+        return low.get() == high.get() && itemCount == CAPACITY;
     }
     
     public void produce(Object[] vals) {
         List<?> data = Arrays.stream(vals).collect(Collectors.toList());
-        logger.info(String.format("Number of change events received : {%d}", data == null ? 0 : data.size()));
+        logger.debug(String.format("Number of change events received : {%d}", data == null ? 0 : data.size()));
         
-        for (int i = 0; i < data.size(); i++) {
+        for (int i = 0; i < data.size(); ) {
             try {
                 if (full()) {
-                    /** Await while input buffer is full */
-                    logger.debug(String.format("Awaiting on full input buffer. Capacity : {%s}", MAX_BUFFER_SIZE));
+                    /* Await while input buffer is full */
+                    logger.debug(String.format("Awaiting on full input buffer. Capacity : {%s}", CAPACITY));
+                    isEmpty.signal();
                     isFull.await();
                     lock.lock();
+                    continue;
                 }
             } catch (Exception e) {
                 logger.info(String.format("Exception while awaiting on a full buffer : {%s}", e));
             }
             
             int pos = high.getAndIncrement();
-            events[pos] = data.get(i);
+            events[pos] = data.get(i++);
             itemCount++;
             
-            if (high.get() == MAX_BUFFER_SIZE) {
-                high.set(high.get() % MAX_BUFFER_SIZE);
-            }
-        }
-    }
-    
-    public void consume() {
-        for (int i = 0; i < BATCH_SIZE; i++) {
-            /* Return on empty buffer */
-            if (empty()) {
-                return;
-            }
-            
-            int pos = low.getAndIncrement();
-            data.add((FileEvent) events[pos]);
-            itemCount--;
-            
-            /* Reset pointer if required */
-            if (low.get() == MAX_BUFFER_SIZE) {
-                low.set(low.get() % MAX_BUFFER_SIZE);
+            if (high.get() == CAPACITY) {
+                high.set(high.get() % CAPACITY);
             }
         }
         
-        if (data.size() > 0) {
-            consumer.apply((FileEvent[]) data.toArray());
-            data.clear();
+        logger.debug(String.format("Number of items in events queue : %d. Low = %d, high = %d", itemCount, low.get(), high.get()));
+    }
+    
+    public void consume() {
+        int consumed = 0;
+        List<FileEvent> cache = new ArrayList<>();
+        
+        for (int i = 0; i < BATCH_SIZE; ) {
+            try {
+                if (empty()) {
+                    /* Await while input buffer is empty */
+                    logger.debug(String.format("No messages found in event buffer.Low = %d, high = %d", low.get(), high.get()));
+                    isFull.signal();
+                    isEmpty.await();
+                    lock.lock();
+                    continue;
+                }
+            } catch (Exception e) {
+                logger.info(String.format("Exception while awaiting on a empty buffer : {%s}", e));
+            }
+            
+            int pos = low.getAndIncrement();
+            cache.add((FileEvent) events[pos]);
+            itemCount--;
+            consumed++;
+            i++;
+            
+            /* Reset pointer if required */
+            if (low.get() == CAPACITY) {
+                low.set(low.get() % CAPACITY);
+            }
         }
+        
+        if (cache.size() > 0) {
+            consumer.apply((FileEvent[]) cache.toArray());
+        }
+        
+        logger.debug(String.format("Number of items consumed %d and remaining in events queue %d", consumed, itemCount));
     }
 }

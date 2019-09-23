@@ -12,15 +12,19 @@
 #include "file_event.h"
 
 #ifndef MAX_BUFFER_SIZE
-#define MAX_BUFFER_SIZE 4096
+  #define MAX_BUFFER_SIZE 4096
 #endif
 
 #ifndef MAX_EVENT_SIZE
-#define MAX_EVENT_SIZE 10
+  #define MAX_EVENT_SIZE 10
 #endif
 
 #ifndef NUM_WATCHED_DIR
-#define NUM_WATCHED_DIR 1
+  #define NUM_WATCHED_DIR 1
+#endif
+
+#ifndef SPACE_CHAR
+  #define SPACE_CHAR ' '
 #endif
 
 /* initialization */
@@ -88,9 +92,10 @@ char* get_event_name(uint32_t mask)
 
 void flush_buffer()
 {
-    char* ptr = buffer;
-    while(ptr < buffer + MAX_BUFFER_SIZE)
-        *ptr++ = '\0';
+    for(int i = 0; i < MAX_BUFFER_SIZE; i++)
+    {
+      path[i] = SPACE_CHAR;
+    }
 }
 
 void call_Java_producer(JNIEnv* env, jobject thisObj, jobjectArray objArr)
@@ -151,11 +156,17 @@ void handle (JNIEnv* env, jobject thisObj, struct pollfd* fds, int* wd)
                 jmethodID methodId = (*env)->GetMethodID(env, cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
                 if(methodId == NULL)
                 {
-                    perror("Unable to get constructor reference");
+                    perror("Unable to get constructor reference for creating file change events");
                     exit (EXIT_FAILURE);
                 }
 
-                jobject object = (*env)->NewObject(env, cls, methodId, path, event->name, get_event_name(event->mask));
+                jobject object = (*env)->NewObject( env,
+                                                    cls,
+                                                    methodId,
+                                                    (*env)->NewStringUTF(env, path),
+                                                    (*env)->NewStringUTF(env, event->name),
+                                                    (*env)->NewStringUTF(env, get_event_name(event->mask)));
+
                 (*env)->SetObjectArrayElement(env, objArr, i++, object);
             }
 
