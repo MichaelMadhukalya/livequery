@@ -8,6 +8,12 @@ TARGET=$1/target
 LIBPOLL_SO=libpoll.so
 LOG_NAME=application.log
 
+#Ensure that root level app dir is passed to the script
+if [ ! "$#" -gt "0" ]; then
+    echo "Launch script at least needs one arg. Please specify app root path"
+    exit 1
+fi
+
 clear
 cd $ROOT
 echo "Starting livequery at root:" $ROOT
@@ -57,7 +63,6 @@ mvn package
 cd $TARGET
 echo "Launching livequery JVM inside working dir: $TARGET"
 java -jar -Xms512M -Xmx2048M -Dfile.encoding=UTF-8 -Djava.library.path=$LIB -Dlivequery.root=$ROOT livequery-1.0-SNAPSHOT.jar >/dev/null 2>&1
-sleep 2
 
 # Exit
 echo "Exiting livequery application. Please check log: " $TARGET/$LOG_NAME
