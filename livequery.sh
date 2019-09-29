@@ -60,7 +60,7 @@ java -jar -Xms512M -Xmx2048M -Dfile.encoding=UTF-8 -Djava.library.path=$LIB -Dli
 sleep 2
 
 # Exit
-echo "Exiting livequery application. Please check log file at: " $LOG_NAME
+echo "Exiting livequery application. Please check log: " $TARGET/$LOG_NAME
 echo "Bye!"
 echo ""
 exit 0
