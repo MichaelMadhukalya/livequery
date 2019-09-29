@@ -12,17 +12,20 @@ clear
 cd $ROOT
 echo "Starting livequery at root:" $ROOT
 echo ""
+sleep 1
 
 # Echo JAVA_HOME dir along with gcc version for compiling native code
 echo "Java home located at: " $JAVA_HOME
 echo "Displaying gcc version details"
 gcc --version
 echo ""
+sleep 1
 
 cd $LIB
 rm -rf $LIBPOLL_SO
 echo "Deleteing previous installation of native lib (.so) file:" $LIBPOLL_SO
 echo ""
+sleep 1
 
 cd $NATIVE
 gcc -fPIC -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" -shared -o $LIB/$LIBPOLL_SO com_livequery_agent_filesystem_core_FileChangeProcessor.c
@@ -39,6 +42,12 @@ fi
 cd $ROOT
 echo "Compiling livequery application at root: $ROOT. This will cleanup previous targets!"
 echo ""
+sleep 1
+
+# Publish Maven version details
+mvn --version
+echo ""
+sleep 1
 
 mvn clean
 mvn compile
@@ -47,9 +56,12 @@ mvn package
 # Launch livequery application from target path
 cd $TARGET
 echo "Launching livequery JVM inside working dir: $TARGET"
-echo ""
 java -jar -Xms512M -Xmx2048M -Dfile.encoding=UTF-8 -Djava.library.path=$LIB -Dlivequery.root=$ROOT livequery-1.0-SNAPSHOT.jar >/dev/null 2>&1
-echo "Exiting livequery application. Bye!"
+sleep 2
+
+# Exit
+echo "Exiting livequery application. Please check log file at: " $LOG_NAME
+echo "Bye!"
 echo ""
 exit 0
 
