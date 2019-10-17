@@ -10,6 +10,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -108,21 +109,9 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
     
     @Override
     public void run() {
-        Function<Object[], Void> process = events -> {
-            consumeBatch(events);
-            
-            Void instance = null;
-            try {
-                instance = Void.TYPE.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                logger.debug(String.format("Exception while instantiating void return type : {%s}", e));
-            }
-            
-            return instance;
-        };
-        
         try {
             /* Create watched directory observer */
+            Consumer<Object[]> process = events -> consumeBatch(events);
             fileChangeProcessor = new FileChangeProcessor(dataSourceName, StringUtils.EMPTY, process, cyclicBarrier);
             
             /* Start observing watched dir for changes */

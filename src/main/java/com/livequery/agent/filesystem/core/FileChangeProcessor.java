@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
@@ -42,7 +43,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     /**
      * File change processor consumer
      */
-    private final Function<Object[], Void> consumer;
+    private final Consumer<Object[]> consumer;
     /**
      * Batch size of items processed
      */
@@ -72,7 +73,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
      */
     private final CyclicBarrier cyclicBarrier;
     
-    public FileChangeProcessor(String fileName, String groupName, Function<Object[], Void> consumer, CyclicBarrier cyclicBarrier) {
+    public FileChangeProcessor(String fileName, String groupName, Consumer<Object[]> consumer, CyclicBarrier cyclicBarrier) {
         FileChangeProcessor.filename = fileName;
         this.groupName = groupName;
         this.consumer = consumer;
@@ -251,7 +252,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         }
         
         if (cache.size() > 0) {
-            consumer.apply((FileEvent[]) cache.toArray());
+            consumer.accept((FileEvent[]) cache.toArray());
         }
         
         logger.debug(String.format("Items consumed %d and remaining in events queue %d", consumed, itemCount));
