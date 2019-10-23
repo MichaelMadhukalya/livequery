@@ -61,6 +61,7 @@ mvn package
 
 # Launch livequery application from target path
 cd $TARGET
+echo ""
 echo "Launching livequery using working dir: $TARGET"
 java -jar -Xms512M -Xmx2048M -Dfile.encoding=UTF-8 -Djava.library.path=$LIB -Dlivequery.root=$ROOT -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 livequery-1.0-SNAPSHOT.jar >/dev/null 2>&1
 

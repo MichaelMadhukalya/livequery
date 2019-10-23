@@ -11,11 +11,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-public class FileChangeConsumer extends AbstractNode implements IFileChangeConsumer<Object> {
+public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implements IFileChangeConsumer {
     /**
      * Logger
      */
@@ -43,7 +42,7 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
     
     /* Cyclic barrier for synchronization across threads */
     private static final int NUM_OF_THREADS = 2;
-    private final CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_OF_THREADS, this::action);
+    private final CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_OF_THREADS, this::post);
     
     /**
      * Executor service
@@ -140,9 +139,5 @@ public class FileChangeConsumer extends AbstractNode implements IFileChangeConsu
         } else {
             return getWatchedDir(file.getParent());
         }
-    }
-    
-    public void action() {
-        post();
     }
 }

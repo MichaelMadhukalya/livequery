@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 
-public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Runnable {
+public class FileChangeProcessor implements IFileChangeProcessor, Runnable {
     
     /**
      * Change processor queue max size
@@ -157,7 +157,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
                     continue;
                 }
                 
-                logger.debug(String.format("Events are available for watched dir, consuming..."));
+                logger.debug(String.format("Events are available for watched dir"));
                 consume();
                 
                 /* Signal producer */
@@ -223,13 +223,13 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
     
     public void consume() {
         int consumed = 0;
-        List<FileEvent> cache = new ArrayList<>();
+        List<Object> cache = new ArrayList<>();
         
         for (int i = 0; i < BATCH_SIZE; ) {
             try {
                 if (empty()) {
                     /* Await while input buffer is empty */
-                    logger.debug(String.format("No messages in event queue.Low = %d, high = %d", low.get(), high.get()));
+                    logger.debug(String.format("No messages in event queue. Low = %d, high = %d", low.get(), high.get()));
                     isFull.signal();
                     isEmpty.await();
                     lock.lock();
@@ -252,7 +252,7 @@ public class FileChangeProcessor<FileEvent> implements IFileChangeProcessor, Run
         }
         
         if (cache.size() > 0) {
-            consumer.accept((FileEvent[]) cache.toArray());
+            consumer.accept(cache.toArray());
         }
         
         logger.debug(String.format("Items consumed %d and remaining in events queue %d", consumed, itemCount));

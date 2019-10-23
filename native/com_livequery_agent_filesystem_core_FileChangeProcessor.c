@@ -110,9 +110,6 @@ void call_Java_producer(JNIEnv* env, jobject thisObj, jobjectArray objArr)
 
     /* Java producer method invocation */
     (*env)->CallVoidMethod(env, thisObj, methodId, objArr);
-
-    /* Flush buffer */
-    flush_buffer();
 }
 
 void handle (JNIEnv* env, jobject thisObj, struct pollfd* fds, int* wd)
