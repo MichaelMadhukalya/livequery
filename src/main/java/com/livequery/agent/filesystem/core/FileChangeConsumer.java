@@ -1,16 +1,17 @@
 package com.livequery.agent.filesystem.core;
 
+import com.livequery.agent.filesystem.core.FileEvent.FileEventType;
 import com.livequery.agent.storagenode.core.CodecMapper;
 import com.livequery.common.AbstractNode;
 import com.livequery.common.Environment;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -110,8 +111,8 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     public void run() {
         try {
             /* Create watched directory observer */
-            Consumer<Object[]> process = events -> consumeBatch(events);
-            fileChangeProcessor = new FileChangeProcessor(dataSourceName, StringUtils.EMPTY, process, cyclicBarrier);
+            fileChangeProcessor =
+                new FileChangeProcessor(dataSourceName, StringUtils.EMPTY, events -> consumeBatch(events), cyclicBarrier);
             
             /* Start observing watched dir for changes */
             service.submit(fileChangeProcessor);
@@ -129,7 +130,9 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     
     @Override
     public void consumeBatch(Object[] events) {
-        Arrays.asList(events).stream().forEach(e -> logger.info(String.format("Event detected : {%s}", e)));
+        Arrays.asList(events).stream()
+            .filter(Objects::nonNull)
+            .forEach(e -> logger.info(String.format("Event detected : {%s}", e)));
     }
     
     private String getWatchedDir(String dataSourceName) {
