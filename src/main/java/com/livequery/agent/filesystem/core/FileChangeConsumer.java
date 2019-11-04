@@ -1,5 +1,6 @@
 package com.livequery.agent.filesystem.core;
 
+import com.livequery.agent.filesystem.core.FileEvent.FileEventType;
 import com.livequery.agent.storagenode.core.CodecMapper;
 import com.livequery.common.AbstractNode;
 import com.livequery.common.Environment;
@@ -119,6 +120,9 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
             /* Start observing watched dir for changes */
             service.submit(fileChangeProcessor);
             
+            /* Start observing for file change events */
+            service.submit(this::poll);
+            
             /* Barrier await */
             cyclicBarrier.await();
         } catch (Exception e) {
@@ -134,7 +138,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     public void consumeBatch(Object[] events) {
         long modifyCount = Arrays.asList(events).stream()
             .filter(Objects::nonNull)
-            .filter(e -> StringUtils.contains(e.toString(), "IN_MODIFY"))
+            .filter(e -> StringUtils.contains(e.toString(), FileEventType.IN_MODIFY.name()))
             .count();
         
         if (modifyCount > 0L) {
@@ -153,6 +157,8 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     }
     
     private void poll() {
+        logger.debug(String.format("Starting thread to poll for file changes"));
+        
         try {
             while (true) {
                 if (updateCount == 0L) {
