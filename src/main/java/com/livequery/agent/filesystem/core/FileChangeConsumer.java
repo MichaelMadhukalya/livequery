@@ -1,6 +1,5 @@
 package com.livequery.agent.filesystem.core;
 
-import com.livequery.agent.filesystem.core.FileEvent.FileEventType;
 import com.livequery.agent.storagenode.core.CodecMapper;
 import com.livequery.common.AbstractNode;
 import com.livequery.common.Environment;
@@ -49,6 +48,9 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
      * Executor service
      */
     private ExecutorService service = Executors.newSingleThreadExecutor();
+    
+    private volatile long updateCount = 0;
+    private static final int MAX_SLEEP_TIME_MILLISECONDS = 5000;
     
     @Override
     protected void pre() {
@@ -130,9 +132,15 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     
     @Override
     public void consumeBatch(Object[] events) {
-        Arrays.asList(events).stream()
+        long modifyCount = Arrays.asList(events).stream()
             .filter(Objects::nonNull)
-            .forEach(e -> logger.info(String.format("Event detected : {%s}", e)));
+            .filter(e -> StringUtils.contains(e.toString(), "IN_MODIFY"))
+            .count();
+        
+        if (modifyCount > 0L) {
+            logger.info(String.format("Update events have been detected : %s", modifyCount));
+            updateCount = modifyCount;
+        }
     }
     
     private String getWatchedDir(String dataSourceName) {
@@ -141,6 +149,21 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
             return dataSourceName;
         } else {
             return getWatchedDir(file.getParent());
+        }
+    }
+    
+    private void poll() {
+        try {
+            while (true) {
+                if (updateCount == 0L) {
+                    Thread.sleep(MAX_SLEEP_TIME_MILLISECONDS);
+                } else {
+                    /* Read serialized records from file*/
+                    updateCount = 0L;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn(String.format("Exception while polling file for changes : %s", e));
         }
     }
 }
