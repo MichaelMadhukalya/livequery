@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,14 +42,14 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
      */
     private FileChangeProcessor fileChangeProcessor;
     
-    /* Cyclic barrier for synchronization across threads */
+    /* Cyclic barrier for synchronization across threads, barrier needs one more for the main thread */
     private static final int NUM_OF_THREADS = 2;
-    private final CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_OF_THREADS, this::post);
+    private final CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_OF_THREADS + 1, this::post);
     
     /**
      * Executor service
      */
-    private ExecutorService service = Executors.newSingleThreadExecutor();
+    private ExecutorService service = Executors.newFixedThreadPool(NUM_OF_THREADS);
     
     private volatile long updateCount = 0;
     private static final int MAX_SLEEP_TIME_MILLISECONDS = 5000;
@@ -159,17 +160,23 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     private void poll() {
         logger.debug(String.format("Starting thread to poll for file changes"));
         
-        try {
-            while (true) {
+        while (true) {
+            try {
                 if (updateCount == 0L) {
                     Thread.sleep(MAX_SLEEP_TIME_MILLISECONDS);
                 } else {
                     /* Read serialized records from file*/
                     updateCount = 0L;
                 }
+            } catch (Exception e) {
+                logger.warn(String.format("Exception while polling file for changes : %s", e));
+            } finally {
+                try {
+                    cyclicBarrier.await();
+                } catch (InterruptedException | BrokenBarrierException e) {
+                    logger.warn(String.format("Exception while barrier await action : %s", e));
+                }
             }
-        } catch (Exception e) {
-            logger.warn(String.format("Exception while polling file for changes : %s", e));
         }
     }
 }
