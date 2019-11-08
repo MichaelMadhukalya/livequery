@@ -1,6 +1,6 @@
 package com.livequery.common;
 
-import java.util.function.Function;
+import java.util.function.Consumer;
 
 public interface IObservable<T> {
 
@@ -11,9 +11,9 @@ public interface IObservable<T> {
      * @param error
      */
     void subscribe(
-        Function<T, Void> next,
-        Function<Void, Void> complete,
-        Function<Exception, Void> error);
+        Consumer<T> next,
+        NoMoreValue complete,
+        Consumer<Throwable> error);
 
     /**
      *
