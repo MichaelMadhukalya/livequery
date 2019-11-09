@@ -1,6 +1,6 @@
 package com.livequery.agent.runtime.core;
 
-import com.livequery.agent.filesystem.core.FileChangeConsumer;
+import com.livequery.agent.filesystem.core.FileChangeProcessor;
 import com.livequery.agent.storagenode.core.StorageNode;
 import com.livequery.common.AbstractNode;
 import com.livequery.common.Environment;
@@ -69,7 +69,7 @@ public class App implements INode {
         logger.info(String.format("Initialized livequery Http request processor component"));
         
         /* Start file consumer */
-        fileChangeConsumer = new FileChangeConsumer();
+        fileChangeConsumer = new FileChangeProcessor();
         fileChangeConsumer.start();
         logger.info(String.format("Initialized livequery file change consumer component"));
         
