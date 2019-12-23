@@ -53,6 +53,7 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
     
     private volatile boolean modified = false;
     private static final int MAX_SLEEP_TIME_MILLISECONDS = 5000;
+    private MetricFileReader<String> reader;
     
     @Override
     protected void pre() {
@@ -122,6 +123,7 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
             service.submit(fileChangeProcessor);
             
             /* Start observing for file change events */
+            reader = new MetricFileReader<>(dataSourceName);
             service.submit(this::poll);
             
             /* Barrier await */
@@ -143,8 +145,10 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
             .count();
         
         /* Modification notifications are always sent regardless of whether modified is currently set to true or false */
-        modified = true;
-        logger.info(String.format("File update events have been detected"));
+        if (modifyCount > 0) {
+            modified = true;
+            logger.info(String.format("File update events have been detected"));
+        }
     }
     
     private String getWatchedDir(String dataSourceName) {
@@ -166,6 +170,7 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
                 } else {
                     /* Read serialized records from file*/
                     modified = false;
+                    reader.get();
                 }
             } catch (Exception e) {
                 logger.warn(String.format("Exception while polling file for changes : %s", e));

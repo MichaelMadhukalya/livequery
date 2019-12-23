@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.apache.log4j.Logger;
 
-public class MetricFileReader<T> {
+class MetricFileReader<T> {
     /**
      * Logger
      */
@@ -30,17 +30,17 @@ public class MetricFileReader<T> {
     /**
      * Maximum number of bytes read from file (~64 MB)
      */
-    static final int MAXIMUM_BYTES_READ = 67_108_864;
+    private static final int MAXIMUM_BYTES_READ = 67_108_864;
     
     /**
      * File channel for reading chunks from the file
      */
-    private FileChannel channel;
+    private final FileChannel channel;
     
     /**
      * ByteBuffer for storing file contents
      */
-    private ByteBuffer buffer = ByteBuffer.allocate(MAXIMUM_BYTES_READ);
+    private final ByteBuffer buffer = ByteBuffer.allocate(MAXIMUM_BYTES_READ);
     
     /**
      * Environment
@@ -66,8 +66,9 @@ public class MetricFileReader<T> {
         buffer.clear();
         
         try {
-            int count = channel.read(buffer);
-            logger.info(String.format("Number of bytes read from file : %s", count));
+            int count = channel.read(buffer, offset);
+            long size = channel.size();
+            logger.info(String.format("Number of bytes read from file : {%s}. Actual file size: {%s}", count, size));
         } catch (IOException e) {
             logger.error(String.format("Exception reading file stream object : {%s}", e));
             return Optional.empty();
@@ -84,16 +85,16 @@ public class MetricFileReader<T> {
         this.offset = offset;
     }
     
-    private Map<T, T>[] deserialize() {
-        String content = null;
+    public Map<T, T>[] get() {
         if (read().isPresent()) {
             try {
-                content = new String(read().get(), environment.getEncoding());
+                String content = new String(read().get(), environment.getEncoding());
+                logger.debug(String.format("Data: %s", content));
             } catch (UnsupportedEncodingException e) {
-                logger
-                    .error(
-                        String.format("Exception de-serializing bytes using encoding {%s} : {%s}", environment.getEncoding(), e));
+                logger.error(String.format("Exception string decode; encoding type {%s} : {%s}", environment.getEncoding(), e));
             }
+        } else {
+            logger.warn(String.format("Updates can't be found for file : {%s}", fileName));
         }
         
         return null;
