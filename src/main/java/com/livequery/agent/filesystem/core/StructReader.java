@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.apache.log4j.Logger;
 
-class MetricFileReader<T> {
+class StructReader<T> {
     /**
      * Logger
      */
@@ -38,7 +38,11 @@ class MetricFileReader<T> {
     private final FileChannel channel;
     
     /**
-     * ByteBuffer for storing file contents
+     * ByteBuffer for storing file contents000000000000000000000
+     *
+     * .0
+     * .000.
+     * +
      */
     private final ByteBuffer buffer = ByteBuffer.allocate(MAXIMUM_BYTES_READ);
     
@@ -47,7 +51,7 @@ class MetricFileReader<T> {
      */
     private final Environment environment = new Environment();
     
-    public MetricFileReader(String fileName) {
+    public StructReader(String fileName) {
         try {
             this.fileName = fileName;
             channel = new FileInputStream(fileName).getChannel();

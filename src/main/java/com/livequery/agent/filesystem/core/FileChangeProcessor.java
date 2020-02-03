@@ -53,7 +53,7 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
     
     private volatile boolean modified = false;
     private static final int MAX_SLEEP_TIME_MILLISECONDS = 5000;
-    private MetricFileReader<String> reader;
+    private StructReader<String> reader;
     
     @Override
     protected void pre() {
@@ -123,7 +123,7 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
             service.submit(fileChangeProcessor);
             
             /* Start observing for file change events */
-            reader = new MetricFileReader<>(dataSourceName);
+            reader = new StructReader<>(dataSourceName);
             service.submit(this::poll);
             
             /* Barrier await */
