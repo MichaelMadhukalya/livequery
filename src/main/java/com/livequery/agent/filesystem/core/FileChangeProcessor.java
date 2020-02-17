@@ -55,6 +55,11 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
     private static final int MAX_SLEEP_TIME_MILLISECONDS = 5000;
     private StructReader<String> reader;
     
+    /**
+     * Codec mapper
+     */
+    private final CodecMapper codecMapper;
+    
     @Override
     protected void pre() {
     }
@@ -91,24 +96,24 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
     }
     
     public FileChangeProcessor() {
-        this(null);
+        this(null, null);
     }
     
-    public FileChangeProcessor(String fileName) {
+    public FileChangeProcessor(String fileName, CodecMapper mapper) {
         logger.info(String.format("Initializing file change consumer with watched dir path"));
         
+        Environment environment = new Environment();
+        this.codecMapper = new CodecMapper(environment.getCodecFilePath());
+        String dsn = (String) this.codecMapper.getCodecMapper().get("DataSourceName");
+        this.reader = new StructReader<>(dsn);
+        logger.info(String.format("DataSourceName (DSN) from inside Codec Mapper : {%s}", dsn));
+        
+        /* Get watched directory for listening to file change events */
         if (StringUtils.isEmpty(fileName)) {
-            Environment environment = new Environment();
-            
-            CodecMapper codecMapper = new CodecMapper(environment.getCodecFilePath());
-            String dsn = (String) codecMapper.getCodecMapper().get("DataSourceName");
-            logger.info(String.format("DataSourceName (DSN) from inside Codec Mapper : {%s}", dsn));
-            
             this.dataSourceName = getWatchedDir(dsn);
         } else {
             this.dataSourceName = getWatchedDir(fileName);
         }
-        
         logger.info(String.format("Watched directory name : {%s}", this.dataSourceName));
     }
     
@@ -122,8 +127,7 @@ public class FileChangeProcessor<T extends FileEvent> extends AbstractNode imple
             /* Start observing watched dir for changes */
             service.submit(fileChangeProcessor);
             
-            /* Start observing for file change events */
-            reader = new StructReader<>(dataSourceName);
+            /* Start observing for file change events, gather and publish events */
             service.submit(this::poll);
             
             /* Barrier await */

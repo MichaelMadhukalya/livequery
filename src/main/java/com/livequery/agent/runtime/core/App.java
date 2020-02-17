@@ -69,7 +69,7 @@ public class App implements INode {
         logger.info(String.format("Initialized livequery Http request processor component"));
         
         /* Start file consumer */
-        fileChangeConsumer = new FileChangeProcessor();
+        fileChangeConsumer = new FileChangeProcessor(codecMapper);
         fileChangeConsumer.start();
         logger.info(String.format("Initialized livequery file change consumer component"));
         

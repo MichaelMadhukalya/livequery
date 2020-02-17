@@ -4,9 +4,9 @@ import com.livequery.common.Environment;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
+import java.io.InputStreamReader;
+import java.nio.CharBuffer;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.apache.log4j.Logger;
@@ -28,23 +28,15 @@ class StructReader<T> {
     private long offset = 0L;
     
     /**
-     * Maximum number of bytes read from file (~64 MB)
+     * Maximum number of chars read from file (~64 MB)
      */
     private static final int MAXIMUM_BYTES_READ = 67_108_864;
     
     /**
-     * File channel for reading chunks from the file
+     * File input stream reader in chars
      */
-    private final FileChannel channel;
-    
-    /**
-     * ByteBuffer for storing file contents000000000000000000000
-     *
-     * .0
-     * .000.
-     * +
-     */
-    private final ByteBuffer buffer = ByteBuffer.allocate(MAXIMUM_BYTES_READ);
+    private final InputStreamReader reader;
+    private final CharBuffer buffer = CharBuffer.allocate(MAXIMUM_BYTES_READ);
     
     /**
      * Environment
@@ -54,25 +46,30 @@ class StructReader<T> {
     public StructReader(String fileName) {
         try {
             this.fileName = fileName;
-            channel = new FileInputStream(fileName).getChannel();
+            reader = new InputStreamReader(new FileInputStream(fileName));
         } catch (FileNotFoundException e) {
             logger.error(String.format("Exception initializing file stream object : {%s}", e));
             throw new IllegalStateException(String.format("Unable to initialize stream object for reading file"));
         }
     }
     
-    private Optional<byte[]> read() {
+    private Optional<char[]> read() {
         /* Flip and reset buffer before next read iteration */
         buffer.flip();
         for (int i = buffer.position(); i < buffer.limit(); i++) {
-            buffer.put(i, (byte) 0);
+            buffer.put(i, ' ');
         }
         buffer.clear();
         
+        int count = -1;
         try {
-            int count = channel.read(buffer, offset);
-            long size = channel.size();
-            logger.info(String.format("Number of bytes read from file : {%s}. Actual file size: {%s}", count, size));
+            /* Skip chars that have been processed */
+            reader.skip(offset);
+            count = reader.read(buffer);
+            if (count <= 0) {
+                return Optional.empty();
+            }
+            logger.info(String.format("Number of bytes read from file : {%s}", count));
         } catch (IOException e) {
             logger.error(String.format("Exception reading file stream object : {%s}", e));
             return Optional.empty();
@@ -89,18 +86,13 @@ class StructReader<T> {
         this.offset = offset;
     }
     
-    public Map<T, T>[] get() {
+    public List<Map<T, T>>[] get() {
+        String content = null;
         if (read().isPresent()) {
-            try {
-                String content = new String(read().get(), environment.getEncoding());
-                logger.debug(String.format("Data: %s", content));
-            } catch (UnsupportedEncodingException e) {
-                logger.error(String.format("Exception string decode; encoding type {%s} : {%s}", environment.getEncoding(), e));
-            }
-        } else {
-            logger.warn(String.format("Updates can't be found for file : {%s}", fileName));
+            content = read().get().toString();
         }
         
+        logger.info(String.format("Data : %s", content));
         return null;
     }
 }
