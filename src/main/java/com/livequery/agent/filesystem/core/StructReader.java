@@ -89,7 +89,7 @@ class StructReader<T> {
     public List<Map<T, T>>[] get() {
         String content = null;
         if (read().isPresent()) {
-            content = read().get().toString();
+            content = String.valueOf(read().get());
         }
         
         logger.info(String.format("Data : %s", content));
