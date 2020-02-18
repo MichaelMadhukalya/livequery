@@ -43,6 +43,11 @@ class StructReader<T> {
      */
     private final Environment environment = new Environment();
     
+    /**
+     * End of entry block marker
+     */
+    private static final char[] EOE = new char[]{'E', 'O', 'E', '\n', '-', '-', '-', '\n'};
+    
     public StructReader(String fileName) {
         try {
             this.fileName = fileName;
@@ -53,7 +58,7 @@ class StructReader<T> {
         }
     }
     
-    private Optional<char[]> read() {
+    private Optional<CharBuffer> read() {
         /* Flip and reset buffer before next read iteration */
         buffer.flip();
         for (int i = buffer.position(); i < buffer.limit(); i++) {
@@ -75,7 +80,7 @@ class StructReader<T> {
             return Optional.empty();
         }
         
-        return Optional.ofNullable(buffer.array());
+        return Optional.ofNullable(buffer);
     }
     
     private long getOffset() {
@@ -86,13 +91,20 @@ class StructReader<T> {
         this.offset = offset;
     }
     
-    public List<Map<T, T>>[] get() {
+    public List<Map<T, T>> get() {
         String content = null;
         if (read().isPresent()) {
-            content = String.valueOf(read().get());
+            CharBuffer buffer = read().get();
+            if (buffer.hasRemaining()) {
+                content = buffer.toString();
+            }
         }
         
         logger.info(String.format("Data : %s", content));
+        return deserialize(content);
+    }
+    
+    private List<Map<T, T>> deserialize(String content) {
         return null;
     }
 }
