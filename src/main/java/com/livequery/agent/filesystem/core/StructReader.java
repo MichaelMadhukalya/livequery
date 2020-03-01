@@ -6,9 +6,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 class StructReader<T> {
@@ -46,25 +54,32 @@ class StructReader<T> {
     /**
      * End of entry block marker
      */
-    private static final char[] EOE = new char[]{'E', 'O', 'E', '\n', '-', '-', '-', '\n'};
+    private static final String END_OF_ENTRY_MARKER = String.valueOf(new char[]{'E', 'O', 'E', '\n', '-', '-', '-', '\n'});
     
     public StructReader(String fileName) {
         try {
             this.fileName = fileName;
             reader = new InputStreamReader(new FileInputStream(fileName));
+            reset();
         } catch (FileNotFoundException e) {
             logger.error(String.format("Exception initializing file stream object : {%s}", e));
             throw new IllegalStateException(String.format("Unable to initialize stream object for reading file"));
         }
     }
     
+    private void reset() {
+        for (int i = 0; i < buffer.limit(); i++) {
+            buffer.put(i, Character.MIN_VALUE);
+        }
+    }
+    
     private Optional<CharBuffer> read() {
         /* Flip and reset buffer before next read iteration */
-        buffer.flip();
-        for (int i = buffer.position(); i < buffer.limit(); i++) {
-            buffer.put(i, ' ');
+        if (buffer.position() > 0) {
+            buffer.flip();
+            reset();
+            buffer.clear();
         }
-        buffer.clear();
         
         int count = -1;
         try {
@@ -83,14 +98,6 @@ class StructReader<T> {
         return Optional.ofNullable(buffer);
     }
     
-    private long getOffset() {
-        return this.offset;
-    }
-    
-    private void setOffset(long offset) {
-        this.offset = offset;
-    }
-    
     public List<Map<T, T>> get() {
         String content = null;
         if (read().isPresent()) {
@@ -105,6 +112,37 @@ class StructReader<T> {
     }
     
     private List<Map<T, T>> deserialize(String content) {
-        return null;
+        int mark = 0;
+        
+        String[] records = StringUtils.split(content, END_OF_ENTRY_MARKER);
+        if (ArrayUtils.isEmpty(records)) {
+            return new ArrayList<>();
+        }
+        
+        mark += StringUtils.lastIndexOf(content, END_OF_ENTRY_MARKER) + 8;
+        offset = mark;
+        List<Map<T, T>> vals = new ArrayList<>();
+        Arrays.stream(records).map(this::parse).collect(Collectors.toList()).forEach(m -> vals.add((Map<T, T>) m));
+        return vals;
+    }
+    
+    private Map<Object, Object> parse(String record) {
+        Map<Object, Object> map = new HashMap<>();
+        Pattern pattern = Pattern.compile("(.+)=(.+)");
+        
+        for (int i = 0, j = 0; i < record.length() && j < record.length(); j++) {
+            if (record.charAt(j) != '\n') {
+                continue;
+            } else {
+                String sub = record.substring(i, j);
+                Matcher matcher = pattern.matcher(sub);
+                if (matcher.find() && matcher.groupCount() == 3) {
+                    map.put(matcher.group(1), matcher.group(2));
+                }
+                i = j + 1;
+            }
+        }
+        
+        return map;
     }
 }
