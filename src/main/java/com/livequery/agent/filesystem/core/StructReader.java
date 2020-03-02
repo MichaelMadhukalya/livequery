@@ -36,9 +36,9 @@ class StructReader<T> {
     private long offset = 0L;
     
     /**
-     * Maximum number of chars read from file (~64 MB)
+     * Maximum number of chars read from file (~32 MB)
      */
-    private static final int MAXIMUM_BYTES_READ = 67_108_864;
+    private static final int MAXIMUM_BYTES_READ = 33_553_920;
     
     /**
      * File input stream reader in chars
