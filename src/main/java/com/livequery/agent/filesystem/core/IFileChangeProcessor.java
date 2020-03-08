@@ -1,23 +1,16 @@
 package com.livequery.agent.filesystem.core;
 
-public interface IFileChangeProcessor<E> {
-    
+import java.util.concurrent.TimeUnit;
+
+public interface IFileChangeProcessor {
+
+    void poll();
+
     /**
-     * Default batch size in number of messages consumed
+     *
+     * @param time
+     * @param timeUnit
+     * @return
      */
-    final int DEFAULT_BATCH_SIZE = 50;
-    
-    /**
-     * Default batch size in KB
-     */
-    final int DEFAULT_BATCH_SIZE_KB = 1000;
-    
-    /**
-     * Maximum number of clients that consumer supports
-     */
-    final int MAX_NUM_CLIENTS = 5;
-    
-    void consume(E fileEvent);
-    
-    void consumeBatch(E[] fileEvents);
+    boolean tryPoll(int time, TimeUnit timeUnit);
 }

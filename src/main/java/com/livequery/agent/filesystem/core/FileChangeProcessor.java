@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 
-public class FileChangeProcessor implements IFileChangeListener, Runnable {
+class FileChangeProcessor implements IFileChangeProcessor, Runnable {
     
     /**
      * Change processor queue max size
@@ -238,7 +238,7 @@ public class FileChangeProcessor implements IFileChangeListener, Runnable {
             }
             
             int pos = low.getAndIncrement();
-            cache.add((FileEvent) events[pos]);
+            cache.add(events[pos]);
             itemCount--;
             consumed++;
             i++;

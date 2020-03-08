@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implements IFileChangeProcessor {
+public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implements IFileChangeConsumer {
     /**
      * Logger
      */
@@ -52,7 +52,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     private ExecutorService service = Executors.newFixedThreadPool(NUM_OF_THREADS);
     
     private volatile boolean modified = false;
-    private static final int MAX_SLEEP_TIME_MILLISECONDS = 5000;
+    private static final int MAX_SLEEP_TIME_MILLISECONDS = 30_000;
     private StructReader<String> reader;
     
     /**
@@ -121,8 +121,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     public void run() {
         try {
             /* Create watched directory observer */
-            fileChangeProcessor =
-                new FileChangeProcessor(dataSourceName, StringUtils.EMPTY, this::consumeBatch, cyclicBarrier);
+            fileChangeProcessor = new FileChangeProcessor(dataSourceName, StringUtils.EMPTY, this::consumeBatch, cyclicBarrier);
             
             /* Start observing watched dir for changes */
             service.submit(fileChangeProcessor);
@@ -151,7 +150,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         /* Modification notifications are always sent regardless of whether modified is currently set to true or false */
         if (modifyCount > 0) {
             modified = true;
-            logger.info(String.format("File update events have been detected"));
+            logger.info(String.format("%d file update events have been detected", modifyCount));
         }
     }
     
@@ -172,7 +171,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
                 if (!modified) {
                     Thread.sleep(MAX_SLEEP_TIME_MILLISECONDS);
                 } else {
-                    /* Read serialized records from file*/
+                    /* Read serialized records from file and publish to subscribers */
                     modified = false;
                     reader.get();
                 }
