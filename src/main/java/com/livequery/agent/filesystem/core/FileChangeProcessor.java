@@ -253,6 +253,6 @@ class FileChangeProcessor implements IFileChangeProcessor, Runnable {
             consumer.accept(cache.toArray());
         }
         
-        logger.debug(String.format("Items consumed %d and remaining in events queue %d", consumed, itemCount));
+        logger.info(String.format("Items consumed %d and remaining in events queue %d", consumed, itemCount));
     }
 }

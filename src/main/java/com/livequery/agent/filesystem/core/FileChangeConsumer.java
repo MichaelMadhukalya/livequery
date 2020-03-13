@@ -4,15 +4,20 @@ import com.livequery.agent.filesystem.core.FileEvent.FileEventType;
 import com.livequery.agent.storagenode.core.CodecMapper;
 import com.livequery.common.AbstractNode;
 import com.livequery.common.Environment;
+import com.livequery.common.IObserver;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -42,8 +47,9 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
      */
     private FileChangeProcessor fileChangeProcessor;
     
+    private static final int NUM_OF_THREADS = 3;
+    
     /* Cyclic barrier for synchronization across threads, barrier needs one more for the main thread */
-    private static final int NUM_OF_THREADS = 2;
     private final CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_OF_THREADS + 1, this::post);
     
     /**
@@ -51,14 +57,20 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
      */
     private ExecutorService service = Executors.newFixedThreadPool(NUM_OF_THREADS);
     
-    private volatile boolean modified = false;
-    private static final int MAX_SLEEP_TIME_MILLISECONDS = 30_000;
+    /**
+     * Struct reader for reading application log file
+     */
     private StructReader<String> reader;
     
     /**
      * Codec mapper
      */
     private final CodecMapper codecMapper;
+    
+    /**
+     * List of observers
+     */
+    private final List<IObserver<Object>> observers = new ArrayList<>();
     
     @Override
     protected void pre() {
@@ -80,8 +92,8 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
                     
                     /* Shut down now */
                     List<?> tasks = service.shutdownNow();
-                    logger.warn(String.format("Found %d tasks waiting when shutdown was initiated",
-                        tasks != null ? tasks.size() : 0));
+                    logger.warn(String.format("Found %d tasks waiting when shutdown was initiated", tasks != null ?
+                        tasks.size() : 0));
                 }
             }
         } catch (InterruptedException e) {
@@ -126,9 +138,6 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
             /* Start observing watched dir for changes */
             service.submit(fileChangeProcessor);
             
-            /* Start observing for file change events, gather and publish events */
-            service.submit(this::poll);
-            
             /* Barrier await */
             cyclicBarrier.await();
         } catch (Exception e) {
@@ -142,15 +151,36 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     
     @Override
     public void consumeBatch(Object[] events) {
+        logger.debug(String.format("Received %d events from poller for processing", events == null ? 0 : events.length));
+        Arrays.asList(events).stream()
+            .filter(Objects::nonNull)
+            .forEach(e -> logger.debug(String.format("File event = %s", e)));
+        
         long modifyCount = Arrays.asList(events).stream()
             .filter(Objects::nonNull)
             .filter(e -> StringUtils.contains(e.toString(), FileEventType.IN_MODIFY.name()))
             .count();
         
-        /* Modification notifications are always sent regardless of whether modified is currently set to true or false */
+        /* Stream changes to observer if file has been modified */
         if (modifyCount > 0) {
-            modified = true;
-            logger.info(String.format("%d file update events have been detected", modifyCount));
+            logger.debug(String.format("%d file update events have been detected", modifyCount));
+            CompletableFuture<List<Map<String, String>>> future = CompletableFuture.supplyAsync(reader::get, service);
+            CompletableFuture.runAsync(() -> notifyObservers(future), service);
+        }
+    }
+    
+    private void notifyObservers(CompletableFuture<List<Map<String, String>>> future) {
+        final List<Object> records = new ArrayList<>();
+        
+        try {
+            List<?> data = future.get(5L, TimeUnit.SECONDS);
+            data.stream().forEach(d -> records.add(d));
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            logger.error(String.format("Exception while reading records using struct reader : {%s}", e));
+            observers.parallelStream().forEach(o -> o.onError(e));
+        } finally {
+            observers.parallelStream().forEach(o -> o.onNext(records));
+            logger.debug(String.format("Observers notified with %d records", records.size()));
         }
     }
     
@@ -163,27 +193,11 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         }
     }
     
-    private void poll() {
-        logger.debug(String.format("Starting thread to poll for file changes"));
-        
-        while (true) {
-            try {
-                if (!modified) {
-                    Thread.sleep(MAX_SLEEP_TIME_MILLISECONDS);
-                } else {
-                    /* Read serialized records from file and publish to subscribers */
-                    modified = false;
-                    reader.get();
-                }
-            } catch (Exception e) {
-                logger.warn(String.format("Exception while polling file for changes : %s", e));
-            } finally {
-                try {
-                    cyclicBarrier.await();
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    logger.warn(String.format("Exception while barrier await action : %s", e));
-                }
-            }
-        }
+    public void addObserver(IObserver observer) {
+        observers.add(observer);
+    }
+    
+    public void removeObserver(IObserver observer) {
+        observers.remove(observer);
     }
 }

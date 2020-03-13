@@ -1,11 +1,13 @@
 package com.livequery.common;
 
+import java.util.List;
+
 public interface IObserver<T> {
 
     /**
      * @param data
      */
-    void onNext(T data);
+    void onNext(List<T> data);
 
     /**
      *
