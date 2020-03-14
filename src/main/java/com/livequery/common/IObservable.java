@@ -1,22 +1,14 @@
 package com.livequery.common;
 
-import java.util.function.Consumer;
-
 public interface IObservable<T> {
-
+    
     /**
-     *
-     * @param next
-     * @param complete
-     * @param error
+     * Adds an observer to an observable
      */
-    void subscribe(
-        Consumer<T> next,
-        NoMoreValue complete,
-        Consumer<Throwable> error);
-
+    void subscribe(IObserver<T> observer);
+    
     /**
-     *
+     * Removes an observer from an observable
      */
     void unsubscribe(IObserver<T> observer);
 }

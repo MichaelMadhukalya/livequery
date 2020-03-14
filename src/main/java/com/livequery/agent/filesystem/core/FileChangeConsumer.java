@@ -4,6 +4,7 @@ import com.livequery.agent.filesystem.core.FileEvent.FileEventType;
 import com.livequery.agent.storagenode.core.CodecMapper;
 import com.livequery.common.AbstractNode;
 import com.livequery.common.Environment;
+import com.livequery.common.IObservable;
 import com.livequery.common.IObserver;
 import java.io.File;
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implements IFileChangeConsumer {
+public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implements IFileChangeConsumer, IObservable<Object> {
     /**
      * Logger
      */
@@ -47,15 +48,18 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
      */
     private FileChangeProcessor fileChangeProcessor;
     
-    private static final int NUM_OF_THREADS = 3;
+    /**
+     * Thread pool size
+     */
+    private static final int THREAD_POOL_SIZE = 3;
     
     /* Cyclic barrier for synchronization across threads, barrier needs one more for the main thread */
-    private final CyclicBarrier cyclicBarrier = new CyclicBarrier(NUM_OF_THREADS + 1, this::post);
+    private final CyclicBarrier cyclicBarrier = new CyclicBarrier(THREAD_POOL_SIZE + 1, this::post);
     
     /**
      * Executor service
      */
-    private ExecutorService service = Executors.newFixedThreadPool(NUM_OF_THREADS);
+    private ExecutorService service = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     
     /**
      * Struct reader for reading application log file
@@ -164,8 +168,8 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         /* Stream changes to observer if file has been modified */
         if (modifyCount > 0) {
             logger.debug(String.format("%d file update events have been detected", modifyCount));
-            CompletableFuture<List<Map<String, String>>> future = CompletableFuture.supplyAsync(reader::get, service);
-            CompletableFuture.runAsync(() -> notifyObservers(future), service);
+            CompletableFuture<List<Map<String, String>>> completableFuture = CompletableFuture.supplyAsync(reader::get, service);
+            service.submit(() -> notifyObservers(completableFuture));
         }
     }
     
@@ -193,11 +197,13 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         }
     }
     
-    public void addObserver(IObserver observer) {
+    @Override
+    public void subscribe(IObserver<Object> observer) {
         observers.add(observer);
     }
     
-    public void removeObserver(IObserver observer) {
+    @Override
+    public void unsubscribe(IObserver<Object> observer) {
         observers.remove(observer);
     }
 }
