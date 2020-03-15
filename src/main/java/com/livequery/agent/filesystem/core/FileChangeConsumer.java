@@ -181,10 +181,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         try {
             List<?> data = future.get(STRUCT_READER_TIMEOUT_SECS, TimeUnit.SECONDS);
             data.stream().forEach(d -> records.add(d));
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error(String.format("Exception while reading records using struct reader : {%s}", e));
-            completableFuture = CompletableFuture.runAsync(() -> observers.parallelStream().forEach(o -> o.onError(e)), service);
-        } finally {
+            
             if (records.size() > 0) {
                 /* Asynchronous observer update */
                 completableFuture = CompletableFuture
@@ -193,6 +190,10 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
             } else {
                 logger.debug(String.format("Records not found for streaming to observers"));
             }
+            
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            logger.error(String.format("Exception while reading records using struct reader : {%s}", e));
+            completableFuture = CompletableFuture.runAsync(() -> observers.parallelStream().forEach(o -> o.onError(e)), service);
         }
     }
     
