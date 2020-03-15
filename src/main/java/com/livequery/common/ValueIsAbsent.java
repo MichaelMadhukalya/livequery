@@ -1,6 +1,6 @@
 package com.livequery.common;
 
 @FunctionalInterface
-public interface NoMoreValue {
+public interface ValueIsAbsent {
     void apply();
 }

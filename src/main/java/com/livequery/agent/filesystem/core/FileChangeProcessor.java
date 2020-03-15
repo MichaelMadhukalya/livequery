@@ -1,11 +1,10 @@
 package com.livequery.agent.filesystem.core;
 
+import com.livequery.common.AppThreadFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -57,26 +56,33 @@ class FileChangeProcessor implements IFileChangeProcessor, Runnable {
     private int itemCount = 0;
     
     /**
-     * Processor service pool
+     * Processor service pool and its parameters
      */
-    private static final int NUMBER_OF_THREADS = 2;
-    private ExecutorService service = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+    private static final int POOL_SIZE = 2;
+    private static final long POOL_SHUTDOWN_TIMEOUT_SEC = 5L;
+    private ExecutorService service = Executors.newFixedThreadPool(POOL_SIZE, new AppThreadFactory());
     
     /**
      * Synchronize between caller thread and the producer and consumer
      */
-    private final CountDownLatch latch = new CountDownLatch(NUMBER_OF_THREADS + 1);
+    private final CountDownLatch latch = new CountDownLatch(POOL_SIZE);
     
-    /**
-     * Cyclic barrier for synchronization with invoking (parent) thread
-     */
-    private final CyclicBarrier cyclicBarrier;
-    
-    public FileChangeProcessor(String fileName, String groupName, Consumer<Object[]> consumer, CyclicBarrier cyclicBarrier) {
-        FileChangeProcessor.filename = fileName;
+    public FileChangeProcessor(String fileName, String groupName, Consumer<Object[]> consumer) {
+        filename = fileName;
         this.groupName = groupName;
         this.consumer = consumer;
-        this.cyclicBarrier = cyclicBarrier;
+    }
+    
+    void terminate() {
+        try {
+            service.awaitTermination(POOL_SHUTDOWN_TIMEOUT_SEC, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            logger.info(String.format("Exception while shutting down thread pool : {%s}", e));
+        } finally {
+            if (!service.isTerminated()) {
+                logger.error(String.format("Pool was not terminated properly following a shutdown"));
+            }
+        }
     }
     
     @Override
@@ -89,12 +95,10 @@ class FileChangeProcessor implements IFileChangeProcessor, Runnable {
             latch.countDown();
             latch.await();
             
-            /* Synchronize with parent through barrier synchronization */
-            cyclicBarrier.await();
+            /* Shutdown internal threas pool */
+            terminate();
         } catch (InterruptedException e) {
             logger.error(String.format("Exception while awaiting task completion : {%s}", e));
-        } catch (BrokenBarrierException e) {
-            logger.error(String.format("Broken barrier exception encountered : {%s}", e));
         }
     }
     
@@ -125,8 +129,8 @@ class FileChangeProcessor implements IFileChangeProcessor, Runnable {
             } finally {
                 /* Check error */
                 if (isError) {
-                    latch.countDown();
                     lock.unlock();
+                    latch.countDown();
                     break;
                 }
             }
@@ -168,8 +172,8 @@ class FileChangeProcessor implements IFileChangeProcessor, Runnable {
             } finally {
                 /* Exit if error */
                 if (isError) {
-                    latch.countDown();
                     lock.unlock();
+                    latch.countDown();
                     break;
                 }
             }
