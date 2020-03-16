@@ -51,7 +51,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     /**
      * Thread pool size
      */
-    private static final int POOL_SIZE = 16;
+    private static final int POOL_SIZE = 4;
     private static final long POOL_SHUTDOWN_TIMEOUT_SEC = 5L;
     
     /**
@@ -177,23 +177,20 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         CompletableFuture<List<Map<String, String>>> future = CompletableFuture.supplyAsync(reader::get, service);
         final List<Object> records = new ArrayList<>();
         
-        CompletableFuture<?> completableFuture;
         try {
             List<?> data = future.get(STRUCT_READER_TIMEOUT_SECS, TimeUnit.SECONDS);
             data.stream().forEach(d -> records.add(d));
             
             if (records.size() > 0) {
                 /* Asynchronous observer update */
-                completableFuture = CompletableFuture
-                    .runAsync(() -> observers.parallelStream().forEach(o -> o.onNext(records)), service);
+                CompletableFuture.runAsync(() -> observers.parallelStream().forEach(o -> o.onNext(records)), service);
                 logger.debug(String.format("Observers notified with %d records", records.size()));
             } else {
                 logger.debug(String.format("Records not found for streaming to observers"));
             }
-            
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             logger.error(String.format("Exception while reading records using struct reader : {%s}", e));
-            completableFuture = CompletableFuture.runAsync(() -> observers.parallelStream().forEach(o -> o.onError(e)), service);
+            CompletableFuture.runAsync(() -> observers.parallelStream().forEach(o -> o.onError(e)), service);
         }
     }
     
