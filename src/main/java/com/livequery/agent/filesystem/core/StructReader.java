@@ -89,7 +89,7 @@ class StructReader<T> {
             if (count <= 0) {
                 return Optional.empty();
             }
-            logger.info(String.format("Number of bytes read from file : {%s}", count));
+            logger.info(String.format("Number of char read from file : {%s}", count));
         } catch (IOException e) {
             logger.error(String.format("Exception reading file stream object : {%s}", e));
             return Optional.empty();
@@ -100,15 +100,21 @@ class StructReader<T> {
     
     public List<Map<T, T>> get() {
         String content = null;
-        if (read().isPresent()) {
-            CharBuffer buffer = read().get();
+        Optional<CharBuffer> bufferOptional = read();
+        
+        if (bufferOptional.isPresent()) {
+            CharBuffer buffer = bufferOptional.get();
             if (buffer.hasRemaining()) {
                 content = buffer.toString();
             }
         }
         
-        logger.info(String.format("Data : %s", content));
-        return deserialize(content);
+        if (StringUtils.isNotEmpty(content)) {
+            logger.debug(String.format("Data read: %s", content));
+            return deserialize(content);
+        }
+        
+        return new ArrayList<>();
     }
     
     private List<Map<T, T>> deserialize(String content) {

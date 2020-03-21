@@ -71,9 +71,9 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     private final CodecMapper codecMapper;
     
     /**
-     * List of observers
+     * Observer
      */
-    private final List<IObserver<Object>> observers = new ArrayList<>();
+    private IObserver observer;
     
     @Override
     protected void pre() {
@@ -124,13 +124,13 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         
         Environment environment = new Environment();
         this.codecMapper = new CodecMapper(environment.getCodecFilePath());
-        String dsn = (String) this.codecMapper.getCodecMapper().get("DataSourceName");
-        this.reader = new StructReader<>(dsn);
-        logger.info(String.format("DataSourceName (DSN) from inside Codec Mapper : {%s}", dsn));
+        String sourceName = (String) this.codecMapper.getCodecMapper().get("DataSourceName");
+        this.reader = new StructReader<>(sourceName);
+        logger.info(String.format("DataSourceName (DSN) from inside Codec Mapper : {%s}", sourceName));
         
         /* Get watched directory for listening to file change events */
         if (StringUtils.isEmpty(fileName)) {
-            this.dataSourceName = getWatchedDir(dsn);
+            this.dataSourceName = getWatchedDir(sourceName);
         } else {
             this.dataSourceName = getWatchedDir(fileName);
         }
@@ -183,14 +183,14 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
             
             if (records.size() > 0) {
                 /* Asynchronous observer update */
-                CompletableFuture.runAsync(() -> observers.parallelStream().forEach(o -> o.onNext(records)), service);
+                CompletableFuture.runAsync(() -> observer.onNext(records), service);
                 logger.debug(String.format("Observers notified with %d records", records.size()));
             } else {
                 logger.debug(String.format("Records not found for streaming to observers"));
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             logger.error(String.format("Exception while reading records using struct reader : {%s}", e));
-            CompletableFuture.runAsync(() -> observers.parallelStream().forEach(o -> o.onError(e)), service);
+            CompletableFuture.runAsync(() -> observer.onError(e), service);
         }
     }
     
@@ -205,11 +205,13 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     
     @Override
     public void subscribe(IObserver<Object> observer) {
-        observers.add(observer);
+        this.observer = observer;
     }
     
     @Override
     public void unsubscribe(IObserver<Object> observer) {
-        observers.remove(observer);
+        if (this.observer.equals(observer)) {
+            observer = null;
+        }
     }
 }
