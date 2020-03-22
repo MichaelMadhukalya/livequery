@@ -36,6 +36,11 @@ class StructReader<T> {
     private long offset = 0L;
     
     /**
+     * Current count of number of chars read from underlying file
+     */
+    private int count = 0;
+    
+    /**
      * Maximum number of chars read from file (~32 MB)
      */
     private static final int MAXIMUM_BYTES_READ = 33_553_920;
@@ -68,28 +73,30 @@ class StructReader<T> {
     }
     
     private void reset() {
+        count = 0;
         for (int i = 0; i < buffer.limit(); i++) {
             buffer.put(i, Character.MIN_VALUE);
         }
+        buffer.clear();
     }
     
     private Optional<CharBuffer> read() {
-        /* Flip and reset buffer before next read iteration */
-        if (buffer.position() > 0) {
-            buffer.flip();
-            reset();
-            buffer.clear();
-        }
+        /* Flip and reset buffer as well as counters before next read iteration */
+        reset();
         
-        int count = -1;
         try {
             /* Skip chars that have been processed */
             reader.skip(offset);
+            
+            long st = System.currentTimeMillis();
             count = reader.read(buffer);
+            long et = System.currentTimeMillis();
+            
             if (count <= 0) {
+                logger.warn(String.format("Unable to read chars from file. Offset: {%d}", offset));
                 return Optional.empty();
             }
-            logger.info(String.format("Number of char read from file : {%s}", count));
+            logger.debug(String.format("Chars read: {%s} Offset: {%d}. Time: {%d}", count, offset, et - st));
         } catch (IOException e) {
             logger.error(String.format("Exception reading file stream object : {%s}", e));
             return Optional.empty();
@@ -99,34 +106,38 @@ class StructReader<T> {
     }
     
     public List<Map<T, T>> get() {
-        String content = null;
+        char[] content = null;
         Optional<CharBuffer> bufferOptional = read();
         
         if (bufferOptional.isPresent()) {
             CharBuffer buffer = bufferOptional.get();
-            if (buffer.hasRemaining()) {
-                content = buffer.toString();
+            if (count > 0) {
+                content = new char[count];
+                buffer.flip();
+                buffer.get(content);
             }
         }
         
-        if (StringUtils.isNotEmpty(content)) {
-            logger.debug(String.format("Data read: %s", content));
-            return deserialize(content);
+        if (ArrayUtils.isNotEmpty(content)) {
+            return deserialize(String.valueOf(content));
         }
         
         return new ArrayList<>();
     }
     
     private List<Map<T, T>> deserialize(String content) {
+        logger.debug(String.format("Content: %s", content));
         int mark = 0;
         
         String[] records = StringUtils.split(content, END_OF_ENTRY_MARKER);
         if (ArrayUtils.isEmpty(records)) {
+            logger.warn(String.format("Unable to parse records. Record format invalid."));
             return new ArrayList<>();
         }
         
-        mark += StringUtils.lastIndexOf(content, END_OF_ENTRY_MARKER) + 8;
-        offset = mark;
+        logger.debug(String.format("Number of valid records : %d", records.length));
+        mark = StringUtils.lastIndexOf(content, END_OF_ENTRY_MARKER) + 8;
+        offset += mark;
         List<Map<T, T>> vals = new ArrayList<>();
         Arrays.stream(records).map(this::parse).collect(Collectors.toList()).forEach(m -> vals.add((Map<T, T>) m));
         return vals;

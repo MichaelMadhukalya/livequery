@@ -102,10 +102,10 @@ public class Schema extends Object {
      * after this class has been fully loaded by application class loader after taking into
      * consideration user fields provided inside the codec file.
      */
-    private final Map<String, Object> __FIELDS__ = new HashMap<>();
+    private final Map<String, Object> FIELDS = new HashMap<>();
 
     private void init() {
-        if (__FIELDS__.size() > 0) {
+        if (FIELDS.size() > 0) {
             return;
         }
 
@@ -120,7 +120,7 @@ public class Schema extends Object {
                 /* Do not put a reference to itself */
                 if (StringUtils.equals(f.getName(), "__FIELDS__") || value instanceof Map) {
                 } else {
-                    __FIELDS__.put(name, value);
+                    FIELDS.put(name, value);
                 }
             } catch (IllegalAccessException e) {
                 /* This should never happen since all instance fields of model object are public */
@@ -130,12 +130,12 @@ public class Schema extends Object {
 
     @Override
     public String toString() {
-        if (__FIELDS__.size() == 0) {
+        if (FIELDS.size() == 0) {
             init();
         }
 
         ToStringBuilder builder = new ToStringBuilder(this);
-        __FIELDS__.entrySet().stream().forEach(e -> builder.append(e.getKey(), e.getValue()));
+        FIELDS.entrySet().stream().forEach(e -> builder.append(e.getKey(), e.getValue()));
         return builder.toString();
     }
 
@@ -150,7 +150,7 @@ public class Schema extends Object {
             return false;
         }
 
-        if (__FIELDS__.size() == 0) {
+        if (FIELDS.size() == 0) {
             init();
         }
 
@@ -159,19 +159,19 @@ public class Schema extends Object {
         arg.init();
 
         EqualsBuilder builder = new EqualsBuilder();
-        __FIELDS__.entrySet().stream()
-            .forEach(e -> builder.append(e.getValue(), arg.__FIELDS__.get(e.getKey())));
+        FIELDS.entrySet().stream()
+            .forEach(e -> builder.append(e.getValue(), arg.FIELDS.get(e.getKey())));
         return builder.isEquals();
     }
 
     @Override
     public int hashCode() {
-        if (__FIELDS__.size() == 0) {
+        if (FIELDS.size() == 0) {
             init();
         }
 
         HashCodeBuilder builder = new HashCodeBuilder(17, 37);
-        __FIELDS__.entrySet().stream().forEach(e -> builder.append(e.getValue()));
+        FIELDS.entrySet().stream().forEach(e -> builder.append(e.getValue()));
         return builder.toHashCode();
     }
 }

@@ -11,7 +11,7 @@ import org.apache.log4j.Logger
 class FileObserver(fileName: String) {
   val LOG: Logger = Logger.getLogger(this.getClass.getCanonicalName)
 
-  def onNext(data: List[Any]) = {
+  def onNext(data: List[AnyRef]) = {
     for (d <- data) {
       LOG.debug(String.format("Record read = %s", d))
     }

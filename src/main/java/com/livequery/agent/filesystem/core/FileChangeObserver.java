@@ -25,14 +25,16 @@ public class FileChangeObserver implements IObserver<String> {
         if (!StringUtils.isEmpty(fileName)) {
             this.fileName = fileName;
         } else {
-            this.fileName = (String) new CodecMapper(new Environment().getCodecFilePath()).getCodecMapper().get("DataSourceName");
+            this.fileName = (String) new CodecMapper(new Environment().getCodecFilePath()).getCodecMapper()
+                .get("DataSourceName");
         }
     }
     
     @Override
     public void onNext(List<String> data) {
-        if (!CollectionUtils.isEmpty(data)) {
-            data.stream().forEach(e -> logger.debug(String.format("Record read : %s", e)));
+        logger.debug(String.format("Number of records read : %s", null == data ? 0 : data.size()));
+        if (CollectionUtils.isNotEmpty(data)) {
+            data.stream().forEach(e -> logger.debug(String.format("Record: %s", e)));
         }
     }
     
@@ -43,6 +45,6 @@ public class FileChangeObserver implements IObserver<String> {
     
     @Override
     public void onError(Throwable throwable) {
-        logger.error(String.format("Error while listening for file change messages : %s", throwable));
+        logger.error(String.format("Error listening to file change events : %s", throwable));
     }
 }

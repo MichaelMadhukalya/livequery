@@ -21,7 +21,7 @@ class FileChangeProcessor implements IFileChangeProcessor, Runnable {
     /**
      * Change processor queue max size
      */
-    private static final int CAPACITY = 1048576;
+    private static final int CAPACITY = 1_048_576;
     /**
      * Logger
      */

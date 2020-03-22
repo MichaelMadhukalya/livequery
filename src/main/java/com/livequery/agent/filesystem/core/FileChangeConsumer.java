@@ -175,10 +175,10 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     
     private void stream() {
         CompletableFuture<List<Map<String, String>>> future = CompletableFuture.supplyAsync(reader::get, service);
-        final List<Object> records = new ArrayList<>();
+        final List<Map<String, String>> records = new ArrayList<>();
         
         try {
-            List<?> data = future.get(STRUCT_READER_TIMEOUT_SECS, TimeUnit.SECONDS);
+            List<Map<String, String>> data = future.get(STRUCT_READER_TIMEOUT_SECS, TimeUnit.SECONDS);
             data.stream().forEach(d -> records.add(d));
             
             if (records.size() > 0) {
