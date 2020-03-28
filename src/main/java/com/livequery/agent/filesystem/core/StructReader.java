@@ -1,25 +1,23 @@
 package com.livequery.agent.filesystem.core;
 
 import com.livequery.common.Environment;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-class StructReader<T> {
+class StructReader<T> implements AutoCloseable {
     /**
      * Logger
      */
@@ -48,7 +46,7 @@ class StructReader<T> {
     /**
      * File input stream reader in chars
      */
-    private final InputStreamReader reader;
+    private BufferedReader reader;
     private final CharBuffer buffer = CharBuffer.allocate(MAXIMUM_BYTES_READ);
     
     /**
@@ -62,14 +60,7 @@ class StructReader<T> {
     private static final String END_OF_ENTRY_MARKER = String.valueOf(new char[]{'E', 'O', 'E', '\n', '-', '-', '-', '\n'});
     
     public StructReader(String fileName) {
-        try {
-            this.fileName = fileName;
-            reader = new InputStreamReader(new FileInputStream(fileName));
-            reset();
-        } catch (FileNotFoundException e) {
-            logger.error(String.format("Exception initializing file stream object : {%s}", e));
-            throw new IllegalStateException(String.format("Unable to initialize stream object for reading file"));
-        }
+        this.fileName = fileName;
     }
     
     private void reset() {
@@ -80,11 +71,25 @@ class StructReader<T> {
         buffer.clear();
     }
     
+    @Override
+    public void close() {
+        try {
+            if (null != reader) {
+                reader.close();
+            }
+            logger.debug(String.format("Input stream reader closed successfully"));
+        } catch (IOException e) {
+            logger.error(String.format("Exception closing input stream reader: {%s}", e));
+        }
+    }
+    
     private Optional<CharBuffer> read() {
         /* Flip and reset buffer as well as counters before next read iteration */
         reset();
         
         try {
+            /* Open reader */
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), new Environment().getEncoding()));
             /* Skip chars that have been processed */
             reader.skip(offset);
             
@@ -92,14 +97,17 @@ class StructReader<T> {
             count = reader.read(buffer);
             long et = System.currentTimeMillis();
             
+            /* Verify count of chars read */
             if (count <= 0) {
-                logger.warn(String.format("Unable to read chars from file. Offset: {%d}", offset));
+                logger.warn(String.format("Unable to read chars from input stream"));
                 return Optional.empty();
             }
-            logger.debug(String.format("Chars read: {%s} Offset: {%d}. Time: {%d}", count, offset, et - st));
+            logger.debug(String.format("Chars read: {%s} Offset: {%d} Time: {%d}", count, offset, et - st));
         } catch (IOException e) {
             logger.error(String.format("Exception reading file stream object : {%s}", e));
             return Optional.empty();
+        } finally {
+            close();
         }
         
         return Optional.ofNullable(buffer);
@@ -126,40 +134,42 @@ class StructReader<T> {
     }
     
     private List<Map<T, T>> deserialize(String content) {
-        logger.debug(String.format("Content: %s", content));
         int mark = 0;
         
-        String[] records = StringUtils.split(content, END_OF_ENTRY_MARKER);
+        String[] records = StringUtils.split(content, '\n');
         if (ArrayUtils.isEmpty(records)) {
             logger.warn(String.format("Unable to parse records. Record format invalid."));
             return new ArrayList<>();
         }
         
-        logger.debug(String.format("Number of valid records : %d", records.length));
         mark = StringUtils.lastIndexOf(content, END_OF_ENTRY_MARKER) + 8;
         offset += mark;
+        
         List<Map<T, T>> vals = new ArrayList<>();
-        Arrays.stream(records).map(this::parse).collect(Collectors.toList()).forEach(m -> vals.add((Map<T, T>) m));
+        parse(records).forEach(m -> vals.add((Map<T, T>) m));
         return vals;
     }
     
-    private Map<Object, Object> parse(String record) {
+    private List<Map<Object, Object>> parse(String[] record) {
+        List<Map<Object, Object>> values = new ArrayList<>();
         Map<Object, Object> map = new HashMap<>();
         Pattern pattern = Pattern.compile("(.+)=(.+)");
         
-        for (int i = 0, j = 0; i < record.length() && j < record.length(); j++) {
-            if (record.charAt(j) != '\n') {
-                continue;
+        for (int i = 0; i < record.length; i++) {
+            if (record[i].equals(StringUtils.EMPTY)) {
+            } else if (record[i].equals("EOE")) {
+                values.add(map);
+                map = new HashMap<>();
+            } else if (record[i].equals("---")) {
             } else {
-                String sub = record.substring(i, j);
+                String sub = record[i];
                 Matcher matcher = pattern.matcher(sub);
                 if (matcher.find() && matcher.groupCount() == 3) {
                     map.put(matcher.group(1), matcher.group(2));
                 }
-                i = j + 1;
             }
         }
         
-        return map;
+        return values;
     }
 }

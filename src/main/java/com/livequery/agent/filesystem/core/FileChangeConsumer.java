@@ -4,6 +4,7 @@ import com.livequery.agent.filesystem.core.FileEvent.FileEventType;
 import com.livequery.agent.storagenode.core.CodecMapper;
 import com.livequery.common.AbstractNode;
 import com.livequery.common.AppThreadFactory;
+import com.livequery.common.Document;
 import com.livequery.common.Environment;
 import com.livequery.common.IObservable;
 import com.livequery.common.IObserver;
@@ -22,11 +23,12 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implements IFileChangeConsumer, IObservable<Object> {
+public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implements IFileChangeConsumer,
+    IObservable<Document> {
     /**
      * Logger
      */
-    private final Logger logger = Logger.getLogger(getClass().getCanonicalName());
+    private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     
     /**
      * Load native library
@@ -62,7 +64,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     /**
      * Struct reader for reading application log file
      */
-    private StructReader<String> reader;
+    private final StructReader<String> reader;
     private static final long STRUCT_READER_TIMEOUT_SECS = 5L;
     
     /**
@@ -73,7 +75,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     /**
      * Observer
      */
-    private IObserver observer;
+    private IObserver<Document> observer;
     
     @Override
     protected void pre() {
@@ -81,6 +83,9 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     
     @Override
     protected void post() {
+        /* Close struct reader */
+        reader.close();
+        
         /* Initiate shutdown on termination */
         try {
             logger.info(String.format("Initiating shutdown of executor service"));
@@ -175,14 +180,13 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     
     private void stream() {
         CompletableFuture<List<Map<String, String>>> future = CompletableFuture.supplyAsync(reader::get, service);
-        final List<Map<String, String>> records = new ArrayList<>();
+        List<Document> records = new ArrayList<>();
         
         try {
             List<Map<String, String>> data = future.get(STRUCT_READER_TIMEOUT_SECS, TimeUnit.SECONDS);
-            data.stream().forEach(d -> records.add(d));
+            data.stream().forEach(d -> records.add(new Document(d)));
             
             if (records.size() > 0) {
-                /* Asynchronous observer update */
                 CompletableFuture.runAsync(() -> observer.onNext(records), service);
                 logger.debug(String.format("Observers notified with %d records", records.size()));
             } else {
@@ -204,12 +208,12 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     }
     
     @Override
-    public void subscribe(IObserver<Object> observer) {
+    public void subscribe(IObserver<Document> observer) {
         this.observer = observer;
     }
     
     @Override
-    public void unsubscribe(IObserver<Object> observer) {
+    public void unsubscribe(IObserver<Document> observer) {
         if (this.observer.equals(observer)) {
             observer = null;
         }

@@ -1,6 +1,7 @@
 package com.livequery.agent.filesystem.core;
 
 import com.livequery.agent.storagenode.core.CodecMapper;
+import com.livequery.common.Document;
 import com.livequery.common.Environment;
 import com.livequery.common.IObserver;
 import java.util.List;
@@ -8,11 +9,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-public class FileChangeObserver implements IObserver<String> {
+public class FileChangeObserver implements IObserver<Document> {
     /**
      * Logger
      */
-    private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
+    private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     
     /* File that is watched for changes */
     private final String fileName;
@@ -31,10 +32,10 @@ public class FileChangeObserver implements IObserver<String> {
     }
     
     @Override
-    public void onNext(List<String> data) {
+    public void onNext(List<Document> data) {
         logger.debug(String.format("Number of records read : %s", null == data ? 0 : data.size()));
         if (CollectionUtils.isNotEmpty(data)) {
-            data.stream().forEach(e -> logger.debug(String.format("Record: %s", e)));
+            data.stream().forEach(e -> logger.debug(String.format("Record: %s", e.toString())));
         }
     }
     

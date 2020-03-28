@@ -25,7 +25,7 @@ class FileChangeProcessor implements IFileChangeProcessor, Runnable {
     /**
      * Logger
      */
-    private final Logger logger = Logger.getLogger(FileChangeProcessor.class.getName());
+    private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     private final Object[] events = new Object[CAPACITY];
     /**
      * Filename and consumer group name
