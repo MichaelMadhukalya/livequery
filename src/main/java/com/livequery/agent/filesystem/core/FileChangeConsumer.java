@@ -139,6 +139,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         } else {
             this.dataSourceName = getWatchedDir(fileName);
         }
+        
         logger.info(String.format("Watched directory name : {%s}", this.dataSourceName));
     }
     
@@ -173,7 +174,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         
         /* Stream changes to observer if file has been modified */
         if (modifyCount > 0) {
-            logger.debug(String.format("%d file update events have been detected", modifyCount));
+            logger.debug(String.format("%d file modification events have been detected", modifyCount));
             service.submit(this::stream);
         }
     }
@@ -188,12 +189,12 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
             
             if (records.size() > 0) {
                 CompletableFuture.runAsync(() -> observer.onNext(records), service);
-                logger.debug(String.format("Observers notified with %d records", records.size()));
+                logger.debug(String.format("Observers notified with {%d} records", records.size()));
             } else {
                 logger.debug(String.format("Records not found for streaming to observers"));
             }
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            logger.error(String.format("Exception while reading records using struct reader : {%s}", e));
+            logger.error(String.format("Exception while reading records using struct reader: {%s}", e));
             CompletableFuture.runAsync(() -> observer.onError(e), service);
         }
     }

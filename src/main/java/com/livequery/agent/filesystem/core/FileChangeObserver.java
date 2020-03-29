@@ -5,7 +5,6 @@ import com.livequery.common.Document;
 import com.livequery.common.Environment;
 import com.livequery.common.IObserver;
 import java.util.List;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -33,10 +32,7 @@ public class FileChangeObserver implements IObserver<Document> {
     
     @Override
     public void onNext(List<Document> data) {
-        logger.debug(String.format("Number of records read : %s", null == data ? 0 : data.size()));
-        if (CollectionUtils.isNotEmpty(data)) {
-            data.stream().forEach(e -> logger.debug(String.format("Record: %s", e.toString())));
-        }
+        logger.debug(String.format("Number of records read : {%d}", null == data ? 0 : data.size()));
     }
     
     @Override
@@ -46,6 +42,6 @@ public class FileChangeObserver implements IObserver<Document> {
     
     @Override
     public void onError(Throwable throwable) {
-        logger.error(String.format("Error listening to file change events : %s", throwable));
+        logger.error(String.format("Error listening to file change events : {%s}", throwable));
     }
 }

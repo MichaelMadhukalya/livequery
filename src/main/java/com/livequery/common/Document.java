@@ -1,6 +1,8 @@
 package com.livequery.common;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.collections.MapUtils;
@@ -22,14 +24,14 @@ public class Document {
     /**
      * Json for document
      */
-    private String json = StringUtils.EMPTY;
+    private String json;
     
     public Document(Map<?, ?> map) {
         if (MapUtils.isEmpty(map)) {
             LOG.warn(String.format("Document initialization using empty input map"));
-            return;
+        } else {
+            map.entrySet().stream().forEach(e -> this.map.put((Object) e.getKey(), (Object) e.getValue()));
         }
-        map.entrySet().stream().forEach(e -> this.map.put(e.getKey(), e.getValue()));
     }
     
     public Map<Object, Object> toMap() {
@@ -64,13 +66,16 @@ public class Document {
     
     @Override
     public String toString() {
-        return json;
+        return toJson();
     }
     
     public String toJson() {
         if (StringUtils.isEmpty(json)) {
-            json = new Gson().toJson(map);
+            Type type = new TypeToken<Map<Object, Object>>() {
+            }.getType();
+            json = new Gson().toJson(map, type);
         }
+        
         return json;
     }
 }

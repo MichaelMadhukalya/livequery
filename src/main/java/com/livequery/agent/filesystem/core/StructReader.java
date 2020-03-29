@@ -59,6 +59,11 @@ class StructReader<T> implements AutoCloseable {
      */
     private static final String END_OF_ENTRY_MARKER = String.valueOf(new char[]{'E', 'O', 'E', '\n', '-', '-', '-', '\n'});
     
+    /**
+     * Line pattern
+     */
+    private static final Pattern LINE_PATTERN = Pattern.compile("(.*)=(.*)");
+    
     public StructReader(String fileName) {
         this.fileName = fileName;
     }
@@ -102,7 +107,7 @@ class StructReader<T> implements AutoCloseable {
                 logger.warn(String.format("Unable to read chars from input stream"));
                 return Optional.empty();
             }
-            logger.debug(String.format("Chars read: {%s} Offset: {%d} Time: {%d}", count, offset, et - st));
+            logger.debug(String.format("Chars read: {%s} from start Offset: {%d} Time: {%d}", count, offset, et - st));
         } catch (IOException e) {
             logger.error(String.format("Exception reading file stream object : {%s}", e));
             return Optional.empty();
@@ -153,7 +158,6 @@ class StructReader<T> implements AutoCloseable {
     private List<Map<Object, Object>> parse(String[] record) {
         List<Map<Object, Object>> values = new ArrayList<>();
         Map<Object, Object> map = new HashMap<>();
-        Pattern pattern = Pattern.compile("(.+)=(.+)");
         
         for (int i = 0; i < record.length; i++) {
             if (record[i].equals(StringUtils.EMPTY)) {
@@ -163,8 +167,8 @@ class StructReader<T> implements AutoCloseable {
             } else if (record[i].equals("---")) {
             } else {
                 String sub = record[i];
-                Matcher matcher = pattern.matcher(sub);
-                if (matcher.find() && matcher.groupCount() == 3) {
+                Matcher matcher = LINE_PATTERN.matcher(sub);
+                if (matcher.find() && matcher.groupCount() >= 2) {
                     map.put(matcher.group(1), matcher.group(2));
                 }
             }
