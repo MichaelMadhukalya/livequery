@@ -83,7 +83,7 @@ class StructReader implements AutoCloseable {
             if (null != reader) {
                 reader.close();
             }
-            logger.debug(String.format("Input stream reader closed successfully"));
+            logger.debug(String.format("Input stream reader closed"));
         } catch (IOException e) {
             logger.error(String.format("Exception closing input stream reader: {%s}", e));
         }
@@ -144,7 +144,6 @@ class StructReader implements AutoCloseable {
         
         String[] records = StringUtils.split(content, '\n');
         if (ArrayUtils.isEmpty(records)) {
-            logger.warn(String.format("Unable to parse records. Record format invalid."));
             return new ArrayList<>();
         }
         
