@@ -3,7 +3,7 @@ package com.livequery.common;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -17,9 +17,9 @@ public class Document {
     private final Logger LOG = Logger.getLogger(getClass().getSimpleName());
     
     /**
-     * Internal map where key and values are stored for the Document object
+     * Internal map where key and values are stored for the Document object after parsing in raw format.
      */
-    private final Map<Object, Object> map = new HashMap<>();
+    private final Map<String, Object> raw = new LinkedHashMap<>();
     
     /**
      * Json for document
@@ -30,12 +30,13 @@ public class Document {
         if (MapUtils.isEmpty(map)) {
             LOG.warn(String.format("Document initialization using empty input map"));
         } else {
-            map.entrySet().stream().forEach(e -> this.map.put((Object) e.getKey(), (Object) e.getValue()));
+            map.entrySet().stream().forEach(e -> this.raw.put((String) e.getKey(), (Object) e.getValue()));
+            map.entrySet().stream().forEach(e -> LOG.debug(String.format("[Key=%s,Value=%s]", e.getKey(), e.getValue())));
         }
     }
     
-    public Map<Object, Object> toMap() {
-        return map;
+    public Map<String, Object> toRawMap() {
+        return raw;
     }
     
     @Override
@@ -45,35 +46,30 @@ public class Document {
         }
         
         Document doc = (Document) that;
-        if (null == doc.toMap() || doc.toMap().size() != map.size()) {
+        if (null == doc.toRawMap() || doc.toRawMap().size() != raw.size()) {
             return false;
         }
         
-        long match = map.entrySet()
+        long match = raw.entrySet()
             .stream()
-            .filter(e -> doc.toMap().containsKey(e.getKey())
-                && doc.toMap().get(e.getKey()).equals(e.getValue()))
+            .filter(e -> doc.toRawMap().containsKey(e.getKey())
+                && doc.toRawMap().get(e.getKey()).equals(e.getValue()))
             .count();
-        return match == map.size();
+        return match == raw.size();
     }
     
     @Override
     public int hashCode() {
         HashCodeBuilder builder = new HashCodeBuilder();
-        map.entrySet().stream().forEach(e -> builder.append(e));
+        raw.entrySet().stream().forEach(e -> builder.append(e));
         return builder.hashCode();
-    }
-    
-    @Override
-    public String toString() {
-        return toJson();
     }
     
     public String toJson() {
         if (StringUtils.isEmpty(json)) {
             Type type = new TypeToken<Map<Object, Object>>() {
             }.getType();
-            json = new Gson().toJson(map, type);
+            json = new Gson().toJson(raw, type);
         }
         
         return json;

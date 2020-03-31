@@ -64,7 +64,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     /**
      * Struct reader for reading application log file
      */
-    private final StructReader<String> reader;
+    private final StructReader reader;
     private static final long STRUCT_READER_TIMEOUT_SECS = 5L;
     
     /**
@@ -130,7 +130,7 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
         Environment environment = new Environment();
         this.codecMapper = new CodecMapper(environment.getCodecFilePath());
         String sourceName = (String) this.codecMapper.getCodecMapper().get("DataSourceName");
-        this.reader = new StructReader<>(sourceName);
+        this.reader = new StructReader(sourceName);
         logger.info(String.format("DataSourceName (DSN) from inside Codec Mapper : {%s}", sourceName));
         
         /* Get watched directory for listening to file change events */
@@ -180,11 +180,11 @@ public class FileChangeConsumer<T extends FileEvent> extends AbstractNode implem
     }
     
     private void stream() {
-        CompletableFuture<List<Map<String, String>>> future = CompletableFuture.supplyAsync(reader::get, service);
+        CompletableFuture<List<Map<String, Object>>> future = CompletableFuture.supplyAsync(reader::get, service);
         List<Document> records = new ArrayList<>();
         
         try {
-            List<Map<String, String>> data = future.get(STRUCT_READER_TIMEOUT_SECS, TimeUnit.SECONDS);
+            List<Map<String, Object>> data = future.get(STRUCT_READER_TIMEOUT_SECS, TimeUnit.SECONDS);
             data.stream().forEach(d -> records.add(new Document(d)));
             
             if (records.size() > 0) {

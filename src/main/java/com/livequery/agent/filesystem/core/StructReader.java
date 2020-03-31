@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +18,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-class StructReader<T> implements AutoCloseable {
+class StructReader implements AutoCloseable {
     /**
      * Logger
      */
@@ -118,7 +119,7 @@ class StructReader<T> implements AutoCloseable {
         return Optional.ofNullable(buffer);
     }
     
-    public List<Map<T, T>> get() {
+    public <K, V> List<Map<K, V>> get() {
         char[] content = null;
         Optional<CharBuffer> bufferOptional = read();
         
@@ -138,7 +139,7 @@ class StructReader<T> implements AutoCloseable {
         return new ArrayList<>();
     }
     
-    private List<Map<T, T>> deserialize(String content) {
+    private <K, V> List<Map<K, V>> deserialize(String content) {
         int mark = 0;
         
         String[] records = StringUtils.split(content, '\n');
@@ -150,14 +151,14 @@ class StructReader<T> implements AutoCloseable {
         mark = StringUtils.lastIndexOf(content, END_OF_ENTRY_MARKER) + 8;
         offset += mark;
         
-        List<Map<T, T>> vals = new ArrayList<>();
-        parse(records).forEach(m -> vals.add((Map<T, T>) m));
+        List<Map<K, V>> vals = new ArrayList<>();
+        parse(records).forEach(m -> vals.add((Map<K, V>) m));
         return vals;
     }
     
     private List<Map<Object, Object>> parse(String[] record) {
         List<Map<Object, Object>> values = new ArrayList<>();
-        Map<Object, Object> map = new HashMap<>();
+        Map<Object, Object> map = new LinkedHashMap<>();
         
         for (int i = 0; i < record.length; i++) {
             if (record[i].equals(StringUtils.EMPTY)) {
