@@ -3,6 +3,7 @@ package com.livequery.common;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.collections.MapUtils;
@@ -26,16 +27,27 @@ public class Document {
      */
     private String json;
     
+    /**
+     * UserDefinedType
+     */
+    private static final UserDefinedType USER_DEFINED_TYPE = new UserDefinedType();
+    private static final Map<String, Class<?>> MAPPERS = new HashMap<>();
+    
+    static {
+        Map<String, Class<?>> mappers = USER_DEFINED_TYPE.getTypeMappers();
+        mappers.entrySet().stream().forEach(e -> MAPPERS.put(e.getKey(), e.getValue()));
+    }
+    
     public Document(Map<?, ?> map) {
         if (MapUtils.isEmpty(map)) {
             LOG.warn(String.format("Document initialization using empty input map"));
         } else {
-            map.entrySet().stream().forEach(e -> this.raw.put((String) e.getKey(), (Object) e.getValue()));
+            map.entrySet().stream().forEach(e -> raw.put((String) e.getKey(), (Object) e.getValue()));
             map.entrySet().stream().forEach(e -> LOG.debug(String.format("[Key=%s,Value=%s]", e.getKey(), e.getValue())));
         }
     }
     
-    public Map<String, Object> toRawMap() {
+    private Map<String, Object> toRawMap() {
         return raw;
     }
     
@@ -52,8 +64,7 @@ public class Document {
         
         long match = raw.entrySet()
             .stream()
-            .filter(e -> doc.toRawMap().containsKey(e.getKey())
-                && doc.toRawMap().get(e.getKey()).equals(e.getValue()))
+            .filter(e -> doc.toRawMap().containsKey(e.getKey()) && doc.toRawMap().get(e.getKey()).equals(e.getValue()))
             .count();
         return match == raw.size();
     }

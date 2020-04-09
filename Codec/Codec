@@ -3,15 +3,15 @@ DataSourceName = /home/michael/env/demo/var/log/application.log
 
 # Name of fields with associated data type
 Fields :
-    @Customer = String      # Tree index
-    @Marketplace = Number   # Tree index
-    $RequestId = String     # Hash index
+    @Customer = String
+    @Marketplace = Number
+    $RequestId = String
     Query = String
     Cookie = String
     Referrer = String
-    @Operation = String     # Tree index
+    @Operation = String
     UserAgent = String
-    @Program = String       # Tree index
+    @Program = String
     Headers = String
     FormData = String
     StatusCode = Number
@@ -19,9 +19,9 @@ Fields :
     Path = String
     Method = String
     IP = String
-    Time = Double
-    StartTime = TimeStamp
-    EndTime = TimeStamp
+    Time = Number
+    StartTime = Number
+    EndTime = Number
 
 # End of entry marker
     EOE = EOE

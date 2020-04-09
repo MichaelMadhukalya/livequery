@@ -69,11 +69,9 @@ public class App implements INode {
         httpRequestProcessor.start();
         logger.info(String.format("Initialized livequery Http request processor component"));
         
-        /* Create file consumer */
+        /* Create file consumer and subscribe an observer */
         fileChangeConsumer = new FileChangeConsumer();
-        /* Add file change observer */
         ((FileChangeConsumer) fileChangeConsumer).subscribe(new FileChangeObserver());
-        /* Start file consumer */
         fileChangeConsumer.start();
         logger.info(String.format("Initialized livequery file change processor component"));
         
@@ -100,22 +98,16 @@ public class App implements INode {
         logger.info(String.format("Root path of livequery environment at : %s", rootPath));
         
         /* Log OS level environment properties (these properties are immutable */
-        System.getenv().entrySet()
-            .forEach(e -> logger
-                .info(
-                    String.format("Environment (OS, Hardware) property found: (%s, %s)", e.getKey(),
-                        e.getValue())));
+        System.getenv().entrySet().forEach(
+            e -> logger.info(String.format("Environment (OS, Hardware) property found: (%s, %s)", e.getKey(), e.getValue())));
         
         /* Log system properties (initialized as part of JVM args) */
         System.getProperties().entrySet()
-            .forEach(e -> logger.info(String
-                .format("System property (JVM) found: (%s, %s)", e.getKey(), e.getValue())));
+            .forEach(e -> logger.info(String.format("System property (JVM) found: (%s, %s)", e.getKey(), e.getValue())));
         
         /* Log application properties */
-        environment.getProperties().entrySet()
-            .forEach(e -> logger.info(String
-                .format("Application property (.properties) found: (%s, %s)", e.getKey(),
-                    e.getValue())));
+        environment.getProperties().entrySet().forEach(
+            e -> logger.info(String.format("Application property (.properties) found: (%s, %s)", e.getKey(), e.getValue())));
     }
     
     private void loggingConfig(String log4jConfig) {
