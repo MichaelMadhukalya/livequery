@@ -2,6 +2,7 @@ package com.livequery.common;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import org.apache.commons.lang3.StringUtils;
 
 public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonNumber {
     BigDecimal decimalValue;
@@ -64,6 +65,11 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
     }
     
     @Override
+    public String toString() {
+        return decimalValue == null ? StringUtils.EMPTY : bigDecimalValue().toString();
+    }
+    
+    @Override
     JsonNumber cast(Object value) throws UnCastableObjectToInstanceTypeException {
         if (null != super.value) {
             return this;
@@ -81,4 +87,5 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
                 String.format("Can't find a valid decimal target type for source value = {%s}", value));
         }
     }
+    
 }

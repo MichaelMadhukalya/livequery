@@ -1,6 +1,7 @@
 package com.livequery.common;
 
 import javax.json.JsonValue;
+import org.apache.commons.lang3.StringUtils;
 
 public abstract class JsonType<T extends JsonType> implements JsonValue {
     T value;
@@ -18,12 +19,12 @@ public abstract class JsonType<T extends JsonType> implements JsonValue {
     
     @Override
     public ValueType getValueType() {
-        return null;
+        return ValueType.NULL;
     }
     
     @Override
     public String toString() {
-        return null;
+        return StringUtils.EMPTY;
     }
     
     abstract T cast(Object value) throws UnCastableObjectToInstanceTypeException;
