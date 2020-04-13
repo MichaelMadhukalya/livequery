@@ -1,5 +1,6 @@
 package com.livequery.common;
 
+import com.google.common.collect.ImmutableMap;
 import com.livequery.annotations.Id;
 import com.livequery.annotations.Property;
 import java.sql.Timestamp;
@@ -91,7 +92,7 @@ public class UserDefinedType extends Object {
     
     private final Map<String, Object> values = new HashMap<>();
     
-    private static final Map<String, Class<?>> TYPE_NAME_MAP = new HashMap<>();
+    private static Map<String, Class<?>> TYPE_NAME_MAP;
     
     private void initValues() {
         if (values.size() > 0) {
@@ -104,7 +105,7 @@ public class UserDefinedType extends Object {
                 Object value = f.get(this);
                 /** Ignore composite fields inside class e.g. maps */
                 if (StringUtils.equals(name, "values") || value instanceof Map) {
-                } else if (StringUtils.equals(name, "MAPPERS") || value instanceof Map) {
+                } else if (StringUtils.equals(name, "TYPE_NAME_MAP") || value instanceof Map) {
                 } else {
                     values.put(name, value);
                 }
@@ -114,22 +115,24 @@ public class UserDefinedType extends Object {
         });
     }
     
-    public Map<String, Class<?>> getTypeMappers() {
+    public Map<String, Class<?>> getTypeNameMap() {
         if (TYPE_NAME_MAP != null && TYPE_NAME_MAP.size() > 0) {
             return TYPE_NAME_MAP;
         }
         
+        Map<String, Class<?>> typeMap = new HashMap<>();
         Arrays.stream(getClass().getFields()).forEach(f -> {
             String name = f.getName();
             Class<?> type = f.getType();
             /* Ignore fields of type map */
             if (StringUtils.equals(name, "values")) {
-            } else if (StringUtils.equals(name, "MAPPERS")) {
+            } else if (StringUtils.equals(name, "TYPE_NAME_MAP")) {
             } else {
-                TYPE_NAME_MAP.put(name, type);
+                typeMap.put(name, type);
             }
         });
         
+        TYPE_NAME_MAP = ImmutableMap.copyOf(typeMap);
         return TYPE_NAME_MAP;
     }
     

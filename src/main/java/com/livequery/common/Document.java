@@ -3,7 +3,6 @@ package com.livequery.common;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.apache.commons.collections.MapUtils;
@@ -15,7 +14,7 @@ public class Document {
     /**
      * Logger
      */
-    private final Logger LOG = Logger.getLogger(getClass().getSimpleName());
+    private final Logger logger = Logger.getLogger(getClass().getSimpleName());
     
     /**
      * Internal map where key and values are stored for the Document object after parsing in raw format.
@@ -28,23 +27,29 @@ public class Document {
     private String json;
     
     /**
+     * Cells structure for Document
+     */
+    private static final int MAX_NUMBER_OF_FIELDS = 65_536;
+    private final Object[] cells = new Object[MAX_NUMBER_OF_FIELDS];
+    private int index = 0;
+    
+    /**
      * UserDefinedType
      */
     private static final UserDefinedType USER_DEFINED_TYPE = new UserDefinedType();
-    private static final Map<String, Class<?>> MAPPERS = new HashMap<>();
-    
-    static {
-        Map<String, Class<?>> mappers = USER_DEFINED_TYPE.getTypeMappers();
-        mappers.entrySet().stream().forEach(e -> MAPPERS.put(e.getKey(), e.getValue()));
-    }
+    private static final Map<String, Class<?>> TYPE_NAME_MAP = USER_DEFINED_TYPE.getTypeNameMap();
     
     public Document(Map<?, ?> map) {
         if (MapUtils.isEmpty(map)) {
-            LOG.warn(String.format("Document initialization using empty input map"));
+            logger.warn(String.format("Document initialization using empty input map"));
         } else {
             map.entrySet().stream().forEach(e -> raw.put((String) e.getKey(), (Object) e.getValue()));
-            map.entrySet().stream().forEach(e -> LOG.debug(String.format("[Key=%s,Value=%s]", e.getKey(), e.getValue())));
+            raw.entrySet().stream().forEach(e -> logger.debug(String.format("[Key=%s,Value=%s]", e.getKey(), e.getValue())));
+            init();
         }
+    }
+    
+    private void init() {
     }
     
     private Map<String, Object> toRawMap() {
