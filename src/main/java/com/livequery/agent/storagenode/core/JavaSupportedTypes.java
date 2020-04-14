@@ -1,7 +1,7 @@
 package com.livequery.agent.storagenode.core;
 
 import com.google.common.collect.ImmutableMap;
-import com.livequery.common.Array;
+import com.livequery.types.Array;
 import java.util.Map;
 import java.util.Optional;
 import org.objectweb.asm.Type;

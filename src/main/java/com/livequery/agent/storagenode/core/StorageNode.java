@@ -1,7 +1,7 @@
 package com.livequery.agent.storagenode.core;
 
 import com.livequery.common.AbstractNode;
-import com.livequery.common.UserDefinedType;
+import com.livequery.types.UserDefinedType;
 import java.util.Map;
 import org.apache.log4j.Logger;
 
@@ -15,7 +15,7 @@ public final class StorageNode extends AbstractNode {
     /**
      * UserDefinedType class name
      */
-    private final static String USER_DEFINED_TYPE_CLASS = "com.livequery.common.UserDefinedType";
+    private final static String USER_DEFINED_TYPE_CLASS = "com.livequery.types.UserDefinedType";
     
     public StorageNode() {
     }

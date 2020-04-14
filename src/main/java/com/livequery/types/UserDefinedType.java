@@ -1,4 +1,4 @@
-package com.livequery.common;
+package com.livequery.types;
 
 import com.google.common.collect.ImmutableMap;
 import com.livequery.annotations.Id;

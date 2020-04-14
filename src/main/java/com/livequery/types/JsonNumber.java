@@ -1,4 +1,4 @@
-package com.livequery.common;
+package com.livequery.types;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -7,11 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonNumber {
     BigDecimal decimalValue;
     
-    public JsonNumber(Object value) {
-        super(new JsonNumber(), value);
+    private JsonNumber() {
     }
     
-    private JsonNumber() {
+    public static final JsonNumber newInstance() {
+        return new JsonNumber();
     }
     
     @Override
@@ -70,7 +70,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
     }
     
     @Override
-    JsonNumber cast(Object value) throws UnCastableObjectToInstanceTypeException {
+    public JsonNumber cast(Object value) throws UnCastableObjectToInstanceTypeException {
         if (null != super.value) {
             return this;
         }
@@ -81,6 +81,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
         }
         
         if (decimalValue != null) {
+            super.value = this;
             return this;
         } else {
             throw new UnCastableObjectToInstanceTypeException(

@@ -1,6 +1,7 @@
 package com.livequery.common;
 
-import com.livequery.common.JsonType.UnCastableObjectToInstanceTypeException;
+import com.livequery.types.JsonType;
+import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 

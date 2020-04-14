@@ -1,4 +1,4 @@
-package com.livequery.common;
+package com.livequery.types;
 
 import javax.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
@@ -6,15 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 public abstract class JsonType<T extends JsonType> implements JsonValue {
     T value;
     
-    public JsonType() {
-    }
-    
-    public JsonType(JsonType<T> instance, Object valueObject) {
-        try {
-            this.value = cast(valueObject);
-        } catch (UnCastableObjectToInstanceTypeException e) {
-            this.value = null;
-        }
+    JsonType() {
     }
     
     @Override
@@ -27,9 +19,9 @@ public abstract class JsonType<T extends JsonType> implements JsonValue {
         return StringUtils.EMPTY;
     }
     
-    abstract T cast(Object value) throws UnCastableObjectToInstanceTypeException;
+    public abstract T cast(Object value) throws UnCastableObjectToInstanceTypeException;
     
-    static class UnCastableObjectToInstanceTypeException extends Exception {
+    public static class UnCastableObjectToInstanceTypeException extends Exception {
         public UnCastableObjectToInstanceTypeException(String message) {
             super(message);
         }
