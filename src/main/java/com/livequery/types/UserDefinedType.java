@@ -90,60 +90,63 @@ public class UserDefinedType extends Object {
     @Id(id = 19)
     public Timestamp TimeStamp;
     
-    private final Map<String, Object> values = new HashMap<>();
+    private final Map<String, Object> m = new HashMap<>();
     
-    private static Map<String, Class<?>> TYPE_NAME_MAP;
+    private static Map<String, Class<?>> MAP;
     
     private void initValues() {
-        if (values.size() > 0) {
+        if (m.size() > 0) {
             return;
         }
         
-        Arrays.stream(getClass().getFields()).forEach(f -> {
-            try {
-                String name = f.getName();
-                Object value = f.get(this);
-                /** Ignore composite fields inside class e.g. maps */
-                if (StringUtils.equals(name, "values") || value instanceof Map) {
-                } else if (StringUtils.equals(name, "TYPE_NAME_MAP") || value instanceof Map) {
-                } else {
-                    values.put(name, value);
+        Arrays.stream(getClass().getFields())
+            .forEach(f -> {
+                try {
+                    String name = f.getName();
+                    Object value = f.get(this);
+                    
+                    /** Ignore composite fields inside class e.g. maps */
+                    if (StringUtils.equals(name, "m") || value instanceof Map) {
+                    } else if (StringUtils.equals(name, "MAP") || value instanceof Map) {
+                    } else {
+                        m.put(name, value);
+                    }
+                } catch (IllegalAccessException e) {
                 }
-            } catch (IllegalAccessException e) {
-                /* Should not happen and won't print as logging is not enabled */
-            }
-        });
+            });
     }
     
     public Map<String, Class<?>> getTypeNameMap() {
-        if (TYPE_NAME_MAP != null && TYPE_NAME_MAP.size() > 0) {
-            return TYPE_NAME_MAP;
+        if (MAP != null && MAP.size() > 0) {
+            return MAP;
         }
         
         Map<String, Class<?>> typeMap = new HashMap<>();
-        Arrays.stream(getClass().getFields()).forEach(f -> {
-            String name = f.getName();
-            Class<?> type = f.getType();
-            /* Ignore fields of type map */
-            if (StringUtils.equals(name, "values")) {
-            } else if (StringUtils.equals(name, "TYPE_NAME_MAP")) {
-            } else {
-                typeMap.put(name, type);
-            }
-        });
+        Arrays.stream(getClass().getFields())
+            .forEach(f -> {
+                String name = f.getName();
+                Class<?> type = f.getType();
+                
+                /* Ignore fields of type map */
+                if (StringUtils.equals(name, "m")) {
+                } else if (StringUtils.equals(name, "MAP")) {
+                } else {
+                    typeMap.put(name, type);
+                }
+            });
         
-        TYPE_NAME_MAP = ImmutableMap.copyOf(typeMap);
-        return TYPE_NAME_MAP;
+        MAP = ImmutableMap.copyOf(typeMap);
+        return MAP;
     }
     
     @Override
     public String toString() {
-        if (values.size() == 0) {
+        if (m.size() == 0) {
             initValues();
         }
         
         ToStringBuilder builder = new ToStringBuilder(this);
-        values.entrySet().stream().forEach(e -> builder.append(e.getKey(), e.getValue()));
+        m.entrySet().stream().forEach(e -> builder.append(e.getKey(), e.getValue()));
         return builder.toString();
     }
     
@@ -157,7 +160,7 @@ public class UserDefinedType extends Object {
             return false;
         }
         
-        if (values.size() == 0) {
+        if (m.size() == 0) {
             initValues();
         }
         
@@ -166,18 +169,18 @@ public class UserDefinedType extends Object {
         arg.initValues();
         
         EqualsBuilder builder = new EqualsBuilder();
-        values.entrySet().stream().forEach(e -> builder.append(e.getValue(), arg.values.get(e.getKey())));
+        m.entrySet().stream().forEach(e -> builder.append(e.getValue(), arg.m.get(e.getKey())));
         return builder.isEquals();
     }
     
     @Override
     public int hashCode() {
-        if (values.size() == 0) {
+        if (m.size() == 0) {
             initValues();
         }
         
         HashCodeBuilder builder = new HashCodeBuilder(17, 37);
-        values.entrySet().stream().forEach(e -> builder.append(e.getValue()));
+        m.entrySet().stream().forEach(e -> builder.append(e.getValue()));
         return builder.toHashCode();
     }
 }
