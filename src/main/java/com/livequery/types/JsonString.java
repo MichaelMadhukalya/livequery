@@ -4,6 +4,13 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
     
     String value;
     
+    private JsonString() {
+    }
+    
+    public static final JsonString newInstance() {
+        return new JsonString();
+    }
+    
     @Override
     public String getString() {
         return value;
@@ -21,6 +28,10 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
     
     @Override
     public JsonString cast(Object value) throws UnCastableObjectToInstanceTypeException {
+        if (null == value) {
+            throw new IllegalArgumentException("Can't construct valid JsonString from null object");
+        }
+        
         if (null != this.value) {
             return this;
         }

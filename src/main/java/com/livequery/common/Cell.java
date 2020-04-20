@@ -37,7 +37,7 @@ public class Cell<T extends JsonType> {
             this.value = type.cast(value);
         } catch (UnCastableObjectToInstanceTypeException e) {
             this.value = null;
-            logger.error(String.format("Exception creating new cell for object: {%s}", e));
+            logger.error(String.format("Exception creating cell for object of type {%s}: {%s}", type.getClass().getName(), e));
         }
     }
     

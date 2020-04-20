@@ -10,6 +10,14 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArray {
+    
+    private JsonArray() {
+    }
+    
+    public static final JsonArray newInstance() {
+        return new JsonArray();
+    }
+    
     @Override
     public JsonObject getJsonObject(int i) {
         return null;
