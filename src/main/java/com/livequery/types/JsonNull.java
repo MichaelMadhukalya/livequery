@@ -1,6 +1,8 @@
 package com.livequery.types;
 
-public class JsonNull extends JsonType<JsonNull> {
+import javax.json.JsonValue;
+
+public class JsonNull extends JsonType<JsonNull> implements JsonValue {
     Object nullable;
     
     private static final String NULL_VALUE = "null";
@@ -15,6 +17,11 @@ public class JsonNull extends JsonType<JsonNull> {
     
     public String getString() {
         return NULL_VALUE;
+    }
+    
+    @Override
+    public ValueType getValueType() {
+        return ValueType.NULL;
     }
     
     @Override

@@ -1,5 +1,6 @@
 package com.livequery.types;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -8,8 +9,14 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.stream.JsonParser.Event;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArray {
+    
+    List<? super JsonValue> list = new ArrayList<>();
+    static JParser parser;
     
     private JsonArray() {
     }
@@ -195,11 +202,98 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     
     @Override
     public ValueType getValueType() {
-        return null;
+        return ValueType.ARRAY;
     }
     
     @Override
     public JsonArray cast(Object value) throws UnCastableObjectToInstanceTypeException {
-        return null;
+        if (null == value) {
+            throw new IllegalArgumentException(String.format("Can't construct valid JsonArray from null object"));
+        }
+        
+        if (CollectionUtils.isNotEmpty(list)) {
+            return this;
+        }
+        
+        try {
+            if (null == parser) {
+                JParser parser = new com.livequery.types.JParser((String) value) {
+                };
+            }
+            
+            Event event = parser.next();
+            if (!event.equals(Event.START_ARRAY)) {
+                throw new IllegalArgumentException(
+                    String.format("JsonArray should always begin with START_ARRAY but found {%s} instead", event.toString()));
+            }
+            
+            String key = null;
+            JsonType<?> val = null;
+            
+            boolean end = false;
+            while (parser.hasNext() && !end) {
+                event = parser.next();
+                
+                switch (event) {
+                    case START_OBJECT:
+                        val = com.livequery.types.JsonObject.newInstance().cast(value);
+                        list.add(val);
+                        break;
+                    case END_OBJECT:
+                        break;
+                    case START_ARRAY:
+                        parser.pushBack(Event.START_ARRAY);
+                        val = com.livequery.types.JsonArray.newInstance().cast(value);
+                        list.add(val);
+                        break;
+                    case END_ARRAY:
+                        end = true;
+                        break;
+                    case KEY_NAME:
+                        key = parser.getString();
+                        if (StringUtils.isEmpty(key)) {
+                            throw new UnCastableObjectToInstanceTypeException(
+                                String.format("Key name can't be null or empty in JsonObject"));
+                        }
+                        break;
+                    case VALUE_STRING:
+                        String data = parser.getString();
+                        val = com.livequery.types.JsonString.newInstance().cast(data);
+                        list.add(val);
+                        break;
+                    case VALUE_NUMBER:
+                        val = com.livequery.types.JsonNumber.newInstance().cast(parser.getString());
+                        list.add(val);
+                        break;
+                    case VALUE_TRUE:
+                        val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.TRUE));
+                        list.add(val);
+                        break;
+                    case VALUE_FALSE:
+                        val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.FALSE));
+                        list.add(val);
+                        break;
+                    case VALUE_NULL:
+                        val = com.livequery.types.JsonNull.newInstance().cast(null);
+                        list.add(val);
+                        break;
+                    default:
+                        throw new UnCastableObjectToInstanceTypeException(
+                            String.format("Unknown event type encountered parsing input for JsonObject"));
+                }
+            }
+            
+            /* Close parser if no more tokens left to parse */
+            if (!parser.hasNext()) {
+                parser.close();
+                parser = null;
+            }
+            
+        } catch (Exception e) {
+            throw new UnCastableObjectToInstanceTypeException(
+                String.format("Exception creating JsonArray from input string {%s}: {%s}", value, e));
+        }
+        
+        return this;
     }
 }

@@ -1,6 +1,6 @@
 package com.livequery.types;
 
-import com.livequery.common.JParser;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,14 +9,14 @@ import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonString;
 import javax.json.JsonValue;
-import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonObject {
     
-    Map<? super String, ? super JsonType<?>> map = new LinkedHashMap<>();
+    Map<? super String, ? super JsonValue> map = new LinkedHashMap<>();
+    static JParser parser;
     
     private JsonObject() {
     }
@@ -32,12 +32,24 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public javax.json.JsonObject getJsonObject(String s) {
-        return null;
+        JsonObject object = new JsonObject();
+        try {
+            object.cast(map.get(s));
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
+        return object;
     }
     
     @Override
     public JsonNumber getJsonNumber(String s) {
-        return null;
+        com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+        try {
+            number.cast(s);
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
+        return number;
     }
     
     @Override
@@ -51,8 +63,9 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     }
     
     @Override
+    @Deprecated
     public String getString(String s, String s1) {
-        return null;
+        return s1;
     }
     
     @Override
@@ -61,8 +74,9 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     }
     
     @Override
+    @Deprecated
     public int getInt(String s, int i) {
-        return 0;
+        return i;
     }
     
     @Override
@@ -71,8 +85,9 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     }
     
     @Override
+    @Deprecated
     public boolean getBoolean(String s, boolean b) {
-        return false;
+        return b;
     }
     
     @Override
@@ -82,22 +97,22 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public int size() {
-        return 0;
+        return MapUtils.isEmpty(map) ? 0 : map.size();
     }
     
     @Override
     public boolean isEmpty() {
-        return false;
+        return MapUtils.isEmpty(map);
     }
     
     @Override
     public boolean containsKey(Object o) {
-        return false;
+        return map.containsKey(o);
     }
     
     @Override
     public boolean containsValue(Object o) {
-        return false;
+        return map.containsValue(o);
     }
     
     @Override
@@ -117,17 +132,21 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public void putAll(Map<? extends String, ? extends JsonValue> map) {
-    
+        if (MapUtils.isNotEmpty(this.map)) {
+            this.map.clear();
+        }
+        
+        map.entrySet().stream().forEach(e -> this.map.put(e.getKey(), e.getValue()));
     }
     
     @Override
     public void clear() {
-    
+        map.clear();
     }
     
     @Override
     public Set<String> keySet() {
-        return null;
+        return new ImmutableSet.Builder().addAll(map.keySet()).build();
     }
     
     @Override
@@ -155,77 +174,98 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
             return this;
         }
         
-        JsonParser parser = JParser.getJsonParserInstance();
-        
-        String key = null;
-        JsonType<?> val = null;
-        
-        boolean end = false;
-        while (parser.hasNext() && !end) {
-            Event event = parser.next();
-            
-            switch (event) {
-                case START_OBJECT:
-                    val = JsonObject.newInstance().cast(value);
-                    map.put(key, val);
-                    // Reset key and value for the next iteration
-                    key = null;
-                    val = null;
-                    break;
-                case END_OBJECT:
-                    end = true;
-                    break;
-                case START_ARRAY:
-                    break;
-                case END_ARRAY:
-                    break;
-                case KEY_NAME:
-                    key = parser.getString();
-                    if (StringUtils.isEmpty(key)) {
-                        throw new UnCastableObjectToInstanceTypeException(
-                            String.format("Key name can't be null or empty in JsonObject"));
-                    }
-                    break;
-                case VALUE_STRING:
-                    String data = parser.getString();
-                    val = com.livequery.types.JsonString.newInstance().cast(data);
-                    map.put(key, val);
-                    /* Reset key and value for next iteration */
-                    key = null;
-                    val = null;
-                    break;
-                case VALUE_NUMBER:
-                    val = com.livequery.types.JsonNumber.newInstance().cast(parser.getString());
-                    map.put(key, val);
-                    /* Reset key and value for next iteration */
-                    key = null;
-                    val = null;
-                    break;
-                case VALUE_TRUE:
-                    val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.TRUE));
-                    map.put(key, val);
-                    /* Reset key and value for next iteration */
-                    key = null;
-                    val = null;
-                    break;
-                case VALUE_FALSE:
-                    val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.FALSE));
-                    map.put(key, val);
-                    /* Reset key and value for next iteration */
-                    key = null;
-                    val = null;
-                    break;
-                case VALUE_NULL:
-                    val = com.livequery.types.JsonNull.newInstance().cast(null);
-                    map.put(key, val);
-                    /* Reset key and value for next iteration */
-                    key = null;
-                    val = null;
-                    break;
-                default:
-                    throw new UnCastableObjectToInstanceTypeException(
-                        String.format("Unknown event type encountered parsing input for JsonObject"));
+        try {
+            if (null == parser) {
+                parser = new JParser((String) value) {
+                };
             }
+            
+            Event event = parser.next();
+            if (!event.equals(Event.START_OBJECT)) {
+                throw new IllegalArgumentException(
+                    String.format("JsonObject should always begin with START_OBJECT found {%s} instead", event.toString()));
+            }
+            
+            String key = null;
+            JsonType<?> val = null;
+            
+            boolean end = false;
+            while (parser.hasNext() && !end) {
+                event = parser.next();
+                
+                switch (event) {
+                    case START_OBJECT:
+                        parser.pushBack(Event.START_OBJECT);
+                        val = JsonObject.newInstance().cast(value);
+                        map.put(key, val);
+                        /* Reset key and value for the next iteration */
+                        key = null;
+                        val = null;
+                        break;
+                    case END_OBJECT:
+                        end = true;
+                        break;
+                    case START_ARRAY:
+                        break;
+                    case END_ARRAY:
+                        break;
+                    case KEY_NAME:
+                        key = parser.getString();
+                        if (StringUtils.isEmpty(key)) {
+                            throw new UnCastableObjectToInstanceTypeException(
+                                String.format("Key name can't be null or empty in JsonObject"));
+                        }
+                        break;
+                    case VALUE_STRING:
+                        String data = parser.getString();
+                        val = com.livequery.types.JsonString.newInstance().cast(data);
+                        map.put(key, val);
+                        /* Reset key and value for next iteration */
+                        key = null;
+                        val = null;
+                        break;
+                    case VALUE_NUMBER:
+                        val = com.livequery.types.JsonNumber.newInstance().cast(parser.getString());
+                        map.put(key, val);
+                        /* Reset key and value for next iteration */
+                        key = null;
+                        val = null;
+                        break;
+                    case VALUE_TRUE:
+                        val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.TRUE));
+                        map.put(key, val);
+                        /* Reset key and value for next iteration */
+                        key = null;
+                        val = null;
+                        break;
+                    case VALUE_FALSE:
+                        val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.FALSE));
+                        map.put(key, val);
+                        /* Reset key and value for next iteration */
+                        key = null;
+                        val = null;
+                        break;
+                    case VALUE_NULL:
+                        val = com.livequery.types.JsonNull.newInstance().cast(null);
+                        map.put(key, val);
+                        /* Reset key and value for next iteration */
+                        key = null;
+                        val = null;
+                        break;
+                    default:
+                        throw new UnCastableObjectToInstanceTypeException(
+                            String.format("Unknown event type encountered parsing input for JsonObject"));
+                }
+            }
+            
+            /* Close parser if no more tokens left to parse */
+            if (!parser.hasNext()) {
+                parser.close();
+                parser = null;
+            }
+        } catch (Exception e) {
+            throw new UnCastableObjectToInstanceTypeException(
+                String.format("Exception creating JsonObject from input string {%s}: {%s}", value, e));
         }
         
         return this;

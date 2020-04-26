@@ -1,8 +1,9 @@
 package com.livequery.types;
 
+import javax.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
-public class JsonBoolean extends JsonType<JsonBoolean> {
+public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     Boolean value;
     
     private static final String TRUE_VALUE = "true";
@@ -50,6 +51,7 @@ public class JsonBoolean extends JsonType<JsonBoolean> {
         throw new IllegalStateException(String.format("Uninitialized JsonBoolean type not associated with boolean value"));
     }
     
+    @Override
     public ValueType getValueType() {
         if (value == Boolean.TRUE) {
             return ValueType.TRUE;

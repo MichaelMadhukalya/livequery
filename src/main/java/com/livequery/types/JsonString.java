@@ -1,7 +1,6 @@
 package com.livequery.types;
 
 public class JsonString extends JsonType<JsonString> implements javax.json.JsonString {
-    
     String value;
     
     private JsonString() {
