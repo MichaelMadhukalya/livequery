@@ -56,6 +56,7 @@ echo ""
 sleep 1
 
 mvn clean
+mvn test
 mvn compile
 mvn package
 
