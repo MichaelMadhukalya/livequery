@@ -1,10 +1,13 @@
 package com.livequery.types;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonString;
@@ -27,39 +30,55 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public JsonArray getJsonArray(String s) {
+        try {
+            com.livequery.types.JsonArray array = com.livequery.types.JsonArray.newInstance();
+            array.cast(map.get(s));
+            return array;
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return null;
     }
     
     @Override
     public javax.json.JsonObject getJsonObject(String s) {
-        JsonObject object = new JsonObject();
         try {
+            JsonObject object = new JsonObject();
             object.cast(map.get(s));
+            return object;
         } catch (UnCastableObjectToInstanceTypeException e) {
         }
         
-        return object;
+        return null;
     }
     
     @Override
     public JsonNumber getJsonNumber(String s) {
-        com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
         try {
-            number.cast(s);
+            com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+            number.cast(map.get(s));
+            return number;
         } catch (UnCastableObjectToInstanceTypeException e) {
         }
         
-        return number;
+        return null;
     }
     
     @Override
     public JsonString getJsonString(String s) {
+        try {
+            com.livequery.types.JsonString string = com.livequery.types.JsonString.newInstance();
+            string.cast(map.get(s));
+            return string;
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return null;
     }
     
     @Override
     public String getString(String s) {
-        return null;
+        return (String) map.get(s);
     }
     
     @Override
@@ -70,6 +89,13 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public int getInt(String s) {
+        try {
+            com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+            number.cast(map.get(s));
+            return number.intValue();
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return 0;
     }
     
@@ -81,7 +107,14 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public boolean getBoolean(String s) {
-        return false;
+        try {
+            com.livequery.types.JsonBoolean jsonBoolean = JsonBoolean.newInstance();
+            jsonBoolean.cast(map.get(s));
+            return jsonBoolean.value;
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
+        return Boolean.FALSE;
     }
     
     @Override
@@ -92,7 +125,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public boolean isNull(String s) {
-        return false;
+        return map.get(s) == null ? true : false;
     }
     
     @Override
@@ -117,17 +150,23 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public JsonValue get(Object o) {
-        return null;
+        return (JsonValue) map.get(o);
     }
     
     @Override
     public JsonValue put(String s, JsonValue jsonValue) {
-        return null;
+        map.put(s, jsonValue);
+        return (JsonValue) map.get(s);
     }
     
     @Override
     public JsonValue remove(Object o) {
-        return null;
+        JsonValue value = null;
+        if (map.containsKey(o)) {
+            value = (JsonValue) map.get(o);
+        }
+        
+        return value;
     }
     
     @Override
@@ -146,22 +185,41 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public Set<String> keySet() {
-        return new ImmutableSet.Builder().addAll(map.keySet()).build();
+        return new ImmutableSet.Builder<String>().addAll((Iterable<? extends String>) map.keySet()).build();
     }
     
     @Override
     public Collection<JsonValue> values() {
-        return null;
+        return Collections.<JsonValue>unmodifiableCollection(
+            map.values().stream().map(e -> (JsonValue) e).collect(Collectors.toList()));
     }
     
     @Override
     public Set<Entry<String, JsonValue>> entrySet() {
-        return null;
+        Set<Entry<String, JsonValue>> set = map.entrySet().stream()
+            .map(e -> Maps.immutableEntry((String) e.getKey(), (JsonValue) e.getValue()))
+            .collect(Collectors.toSet());
+        
+        return (Set<Entry<String, JsonValue>>) new ImmutableSet.Builder<Entry<String, JsonValue>>()
+            .addAll((Iterable<? extends Entry<String, JsonValue>>) set);
     }
     
     @Override
     public ValueType getValueType() {
         return ValueType.OBJECT;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuffer buffer = new StringBuffer().append("{");
+        map.entrySet().stream().forEach(e -> {
+            buffer.append("\"").append(e.getKey()).append("\"").append(":").append(e.getValue()).append(",");
+        });
+        if (buffer.length() > 1 && buffer.charAt(buffer.length() - 1) == ',') {
+            buffer.deleteCharAt(buffer.length() - 1);
+        }
+        buffer.append("}");
+        return buffer.toString();
     }
     
     @Override
@@ -187,7 +245,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
             }
             
             String key = null;
-            JsonType<?> val = null;
+            JsonValue val = null;
             
             boolean end = false;
             while (parser.hasNext() && !end) {

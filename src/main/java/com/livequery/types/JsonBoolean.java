@@ -63,6 +63,11 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     }
     
     @Override
+    public String toString() {
+        return value.toString();
+    }
+    
+    @Override
     public JsonBoolean cast(Object value) throws UnCastableObjectToInstanceTypeException {
         if (null == value) {
             throw new IllegalArgumentException("Can't construct valid JsonBoolean from null object");

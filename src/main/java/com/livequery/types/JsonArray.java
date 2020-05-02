@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Collectors;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -27,182 +28,269 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     
     @Override
     public JsonObject getJsonObject(int i) {
+        try {
+            com.livequery.types.JsonObject object = com.livequery.types.JsonObject.newInstance();
+            object.cast(list.get(i));
+            return object;
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return null;
     }
     
     @Override
     public javax.json.JsonArray getJsonArray(int i) {
+        try {
+            JsonArray array = JsonArray.newInstance();
+            array.cast(list.get(i));
+            return array;
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return null;
     }
     
     @Override
     public JsonNumber getJsonNumber(int i) {
+        try {
+            com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+            number.cast(list.get(i));
+            return number;
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return null;
     }
     
     @Override
     public JsonString getJsonString(int i) {
+        try {
+            com.livequery.types.JsonString string = com.livequery.types.JsonString.newInstance();
+            string.cast(list.get(i));
+            return string;
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return null;
     }
     
     @Override
     public <T extends JsonValue> List<T> getValuesAs(Class<T> aClass) {
-        return null;
+        List<T> newlist = new ArrayList<>();
+        newlist = list.stream().map(e -> {
+            T val = null;
+            try {
+                JsonType<?> jsonType = (JsonType<?>) e;
+                val = (T) jsonType.cast(((JsonType<?>) e).toString());
+            } catch (UnCastableObjectToInstanceTypeException ex) {
+            }
+            
+            return val;
+        }).collect(Collectors.toList());
+        
+        return newlist;
     }
     
     @Override
     public String getString(int i) {
-        return null;
+        return (String) list.get(i);
     }
     
     @Override
+    @Deprecated
     public String getString(int i, String s) {
         return null;
     }
     
     @Override
     public int getInt(int i) {
+        try {
+            com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+            number.cast(list.get(i));
+            return number.intValue();
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return 0;
     }
     
     @Override
+    @Deprecated
     public int getInt(int i, int i1) {
         return 0;
     }
     
     @Override
     public boolean getBoolean(int i) {
+        try {
+            com.livequery.types.JsonBoolean jsonBoolean = com.livequery.types.JsonBoolean.newInstance();
+            jsonBoolean.cast(list.get(i));
+            return jsonBoolean.value;
+        } catch (UnCastableObjectToInstanceTypeException e) {
+        }
+        
         return false;
     }
     
     @Override
+    @Deprecated
     public boolean getBoolean(int i, boolean b) {
         return false;
     }
     
     @Override
     public boolean isNull(int i) {
-        return false;
+        JsonValue value = (JsonValue) list.get(i);
+        return value == null ? true : false;
     }
     
     @Override
     public int size() {
-        return 0;
+        return list.size();
     }
     
     @Override
     public boolean isEmpty() {
-        return false;
+        return CollectionUtils.isEmpty(list);
     }
     
     @Override
     public boolean contains(Object o) {
-        return false;
+        return list.stream().filter(e -> e.equals(o)).count() >= 1 ? true : false;
     }
     
     @Override
     public Iterator<JsonValue> iterator() {
-        return null;
+        return (Iterator<JsonValue>) list.iterator();
     }
     
     @Override
     public Object[] toArray() {
-        return new Object[0];
+        return list.toArray();
     }
     
     @Override
     public <T> T[] toArray(T[] ts) {
-        return null;
+        return list.toArray(ts);
     }
     
     @Override
     public boolean add(JsonValue jsonValue) {
-        return false;
+        return list.add(jsonValue);
     }
     
     @Override
     public boolean remove(Object o) {
-        return false;
+        return list.remove(o);
     }
     
     @Override
     public boolean containsAll(Collection<?> collection) {
-        return false;
+        return list.containsAll(collection);
     }
     
     @Override
     public boolean addAll(Collection<? extends JsonValue> collection) {
-        return false;
+        return list.addAll(collection);
     }
     
     @Override
     public boolean addAll(int i, Collection<? extends JsonValue> collection) {
-        return false;
+        return list.addAll(i, collection);
     }
     
     @Override
     public boolean removeAll(Collection<?> collection) {
-        return false;
+        return list.removeAll(collection);
     }
     
     @Override
     public boolean retainAll(Collection<?> collection) {
-        return false;
+        return list.retainAll(collection);
     }
     
     @Override
     public void clear() {
-    
+        list.clear();
     }
     
     @Override
     public JsonValue get(int i) {
-        return null;
+        return (JsonValue) list.get(i);
     }
     
     @Override
     public JsonValue set(int i, JsonValue jsonValue) {
-        return null;
+        return (JsonValue) list.set(i, jsonValue);
     }
     
     @Override
     public void add(int i, JsonValue jsonValue) {
-    
+        list.add(i, jsonValue);
     }
     
     @Override
     public JsonValue remove(int i) {
-        return null;
+        return (JsonValue) list.remove(i);
     }
     
     @Override
     public int indexOf(Object o) {
-        return 0;
+        int index = -1;
+        
+        for (Object e : list) {
+            ++index;
+            if (e.equals(o)) {
+                return index;
+            }
+        }
+        
+        return -1;
     }
     
     @Override
     public int lastIndexOf(Object o) {
-        return 0;
+        int lastIndex = -1, index = 0;
+        
+        for (Object e : list) {
+            if (e.equals(o)) {
+                lastIndex = index;
+            }
+            index++;
+        }
+        
+        return lastIndex;
     }
     
     @Override
     public ListIterator<JsonValue> listIterator() {
-        return null;
+        return (ListIterator<JsonValue>) list.listIterator();
     }
     
     @Override
     public ListIterator<JsonValue> listIterator(int i) {
-        return null;
+        return listIterator(i);
     }
     
     @Override
     public List<JsonValue> subList(int i, int i1) {
-        return null;
+        return subList(i, i1);
     }
     
     @Override
     public ValueType getValueType() {
         return ValueType.ARRAY;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuffer buffer = new StringBuffer().append("[");
+        list.stream().forEach(e -> buffer.append(((Object) e).toString()).append(','));
+        if (buffer.length() > 1 && buffer.charAt(buffer.length() - 1) == ',') {
+            buffer.deleteCharAt(buffer.length() - 1);
+        }
+        buffer.append("]");
+        return buffer.toString();
     }
     
     @Override

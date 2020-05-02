@@ -2,7 +2,6 @@ package com.livequery.types;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import org.apache.commons.lang3.StringUtils;
 
 public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonNumber {
     BigDecimal decimalValue;
@@ -66,7 +65,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
     
     @Override
     public String toString() {
-        return decimalValue == null ? StringUtils.EMPTY : bigDecimalValue().toString();
+        return value.toString();
     }
     
     @Override
