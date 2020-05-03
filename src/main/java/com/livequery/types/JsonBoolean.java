@@ -4,13 +4,13 @@ import javax.json.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 
 public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
-    Boolean value;
+    Boolean booleanValue;
     
     private static final String TRUE_VALUE = "true";
     private static final String FALSE_VALUE = "false";
     
     private JsonBoolean() {
-        this.value = null;
+        this.booleanValue = null;
     }
     
     public static final JsonBoolean newInstance() {
@@ -18,13 +18,13 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     }
     
     public boolean getBoolean() {
-        return value;
+        return booleanValue;
     }
     
     public int getInt() {
-        if (value == Boolean.TRUE) {
+        if (booleanValue == Boolean.TRUE) {
             return 1;
-        } else if (value == Boolean.FALSE) {
+        } else if (booleanValue == Boolean.FALSE) {
             return 0;
         }
         
@@ -32,9 +32,9 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     }
     
     public String getString() {
-        if (value == Boolean.TRUE) {
+        if (booleanValue == Boolean.TRUE) {
             return TRUE_VALUE;
-        } else if (value == Boolean.FALSE) {
+        } else if (booleanValue == Boolean.FALSE) {
             return FALSE_VALUE;
         }
         
@@ -42,9 +42,9 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     }
     
     public JsonNumber getJsonNumber() throws UnCastableObjectToInstanceTypeException {
-        if (value == Boolean.TRUE) {
+        if (booleanValue == Boolean.TRUE) {
             return JsonNumber.newInstance().cast((Object) String.valueOf(1));
-        } else if (value == Boolean.FALSE) {
+        } else if (booleanValue == Boolean.FALSE) {
             return JsonNumber.newInstance().cast((Object) String.valueOf(0));
         }
         
@@ -53,9 +53,9 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     
     @Override
     public ValueType getValueType() {
-        if (value == Boolean.TRUE) {
+        if (booleanValue == Boolean.TRUE) {
             return ValueType.TRUE;
-        } else if (value == Boolean.FALSE) {
+        } else if (booleanValue == Boolean.FALSE) {
             return ValueType.FALSE;
         }
         
@@ -64,7 +64,7 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     
     @Override
     public String toString() {
-        return value.toString();
+        return booleanValue.toString();
     }
     
     @Override
@@ -73,14 +73,14 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
             throw new IllegalArgumentException("Can't construct valid JsonBoolean from null object");
         }
         
-        String val = String.valueOf(value);
+        String val = (String) value;
         if (StringUtils.equalsIgnoreCase(val, TRUE_VALUE) || StringUtils.equalsIgnoreCase(val, "1")) {
-            value = Boolean.TRUE;
+            booleanValue = Boolean.TRUE;
         } else if (StringUtils.equalsIgnoreCase(val, FALSE_VALUE) || StringUtils.equalsIgnoreCase(val, "0")) {
-            value = Boolean.FALSE;
+            booleanValue = Boolean.FALSE;
         }
         
-        if (null != value) {
+        if (null != booleanValue) {
             return this;
         }
         

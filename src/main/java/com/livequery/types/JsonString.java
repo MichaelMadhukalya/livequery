@@ -1,7 +1,7 @@
 package com.livequery.types;
 
 public class JsonString extends JsonType<JsonString> implements javax.json.JsonString {
-    String value;
+    String string;
     
     private JsonString() {
     }
@@ -12,7 +12,7 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
     
     @Override
     public String getString() {
-        return value;
+        return string;
     }
     
     @Override
@@ -27,7 +27,7 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
     
     @Override
     public String toString() {
-        return value;
+        return string;
     }
     
     @Override
@@ -36,11 +36,11 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
             throw new IllegalArgumentException("Can't construct valid JsonString from null object");
         }
         
-        if (null != this.value) {
+        if (null != string) {
             return this;
         }
         
-        this.value = (String) value;
+        string = (String) value;
         return this;
     }
 }

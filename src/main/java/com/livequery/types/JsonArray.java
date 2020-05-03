@@ -125,7 +125,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
         try {
             com.livequery.types.JsonBoolean jsonBoolean = com.livequery.types.JsonBoolean.newInstance();
             jsonBoolean.cast(list.get(i));
-            return jsonBoolean.value;
+            return jsonBoolean.booleanValue;
         } catch (UnCastableObjectToInstanceTypeException e) {
         }
         

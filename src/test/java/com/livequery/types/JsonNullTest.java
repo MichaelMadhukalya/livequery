@@ -21,13 +21,13 @@ public class JsonNullTest {
     @Test
     public void castNullObjectAsInput_Test() throws UnCastableObjectToInstanceTypeException {
         jsonNull = JsonNull.newInstance();
-        JsonNull target = jsonNull.cast(null);
-        Assert.assertTrue(target.nullable == null);
+        jsonNull.cast(null);
+        Assert.assertTrue(jsonNull.nullable == null);
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
     public void castNonNullObjectAsINputExpectedException_Test() throws UnCastableObjectToInstanceTypeException {
         jsonNull = JsonNull.newInstance();
-        JsonNull target = jsonNull.cast("test");
+        jsonNull.cast("test");
     }
 }

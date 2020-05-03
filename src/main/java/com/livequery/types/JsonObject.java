@@ -110,7 +110,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
         try {
             com.livequery.types.JsonBoolean jsonBoolean = JsonBoolean.newInstance();
             jsonBoolean.cast(map.get(s));
-            return jsonBoolean.value;
+            return jsonBoolean.booleanValue;
         } catch (UnCastableObjectToInstanceTypeException e) {
         }
         
