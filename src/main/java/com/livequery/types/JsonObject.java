@@ -200,8 +200,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
             .map(e -> Maps.immutableEntry((String) e.getKey(), (JsonValue) e.getValue()))
             .collect(Collectors.toSet());
         
-        return (Set<Entry<String, JsonValue>>) new ImmutableSet.Builder<Entry<String, JsonValue>>()
-            .addAll((Iterable<? extends Entry<String, JsonValue>>) set);
+        return set;
     }
     
     @Override
@@ -233,10 +232,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
         }
         
         try {
-            if (null == parser) {
-                parser = new JParser((String) value) {
-                };
-            }
+            parser = JParser.getOrCreateNewInstance((String) value);
             
             Event event = parser.next();
             if (!event.equals(Event.START_OBJECT)) {
@@ -246,6 +242,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
             
             String key = null;
             JsonValue val = null;
+            Object data = null;
             
             boolean end = false;
             while (parser.hasNext() && !end) {
@@ -264,6 +261,12 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
                         end = true;
                         break;
                     case START_ARRAY:
+                        parser.pushBack(Event.START_ARRAY);
+                        val = com.livequery.types.JsonArray.newInstance().cast(value);
+                        map.put(key, val);
+                        /* Reset key and value for the next iteration */
+                        key = null;
+                        val = null;
                         break;
                     case END_ARRAY:
                         break;
@@ -275,7 +278,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
                         }
                         break;
                     case VALUE_STRING:
-                        String data = parser.getString();
+                        data = parser.getString();
                         val = com.livequery.types.JsonString.newInstance().cast(data);
                         map.put(key, val);
                         /* Reset key and value for next iteration */
@@ -283,7 +286,8 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
                         val = null;
                         break;
                     case VALUE_NUMBER:
-                        val = com.livequery.types.JsonNumber.newInstance().cast(parser.getString());
+                        data = parser.getBigDecimal();
+                        val = com.livequery.types.JsonNumber.newInstance().cast(data);
                         map.put(key, val);
                         /* Reset key and value for next iteration */
                         key = null;
@@ -316,8 +320,8 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
                 }
             }
             
-            /* Close parser if no more tokens left to parse */
-            if (!parser.hasNext()) {
+            /* Close parser if no more tokens are left to parse */
+            if (!parser.hasNext() && !parser.isClose()) {
                 parser.close();
                 parser = null;
             }

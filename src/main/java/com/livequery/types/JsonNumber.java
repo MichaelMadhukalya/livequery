@@ -65,7 +65,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
     
     @Override
     public String toString() {
-        return value.toString();
+        return BigDecimal.valueOf(doubleValue()).toEngineeringString();
     }
     
     @Override
@@ -79,7 +79,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
         }
         
         try {
-            decimalValue = new BigDecimal((String) value);
+            decimalValue = new BigDecimal(String.valueOf(value));
         } catch (NumberFormatException e) {
         }
         

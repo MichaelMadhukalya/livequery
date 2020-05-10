@@ -8,12 +8,12 @@ import org.junit.Test;
 
 public class JsonObjectTest {
     
-    JsonObject jsonObject;
-    
     /* Input data */
     String INPUT_0 = "{}";
     
     String INPUT_1 = "{\"key\": \"value\"}";
+    
+    String INPUT_11 = "{\"key\": [1, 2, 3]}";
     
     String INPUT_2 = "{\"key1\": \"value1\", \"key2\": \"value2\"}";
     
@@ -33,26 +33,42 @@ public class JsonObjectTest {
     
     @After
     public void tearDown() throws Exception {
+        JParser.cleanup();
     }
     
     @Test
     public void emptyStringAsInput_Test() throws UnCastableObjectToInstanceTypeException {
-        jsonObject = JsonObject.newInstance();
+        JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_0);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 0);
     }
     
     @Test
     public void singleKeyAsInput_Test() throws UnCastableObjectToInstanceTypeException {
-        jsonObject = JsonObject.newInstance();
+        JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 1);
     }
     
     @Test
+    public void singleKeyWithArrayValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_11);
+        Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 1);
+    }
+    
+    @Test
     public void multipleKeyAsInput_Test() throws UnCastableObjectToInstanceTypeException {
-        jsonObject = JsonObject.newInstance();
+        JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_2);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 2);
     }
+    
+    @Test
+    public void mixedValuesAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_3);
+        Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 4);
+    }
+    
 }

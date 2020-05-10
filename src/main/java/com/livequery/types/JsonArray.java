@@ -304,10 +304,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
         }
         
         try {
-            if (null == parser) {
-                JParser parser = new com.livequery.types.JParser((String) value) {
-                };
-            }
+            parser = JParser.getOrCreateNewInstance((String) value);
             
             Event event = parser.next();
             if (!event.equals(Event.START_ARRAY)) {
@@ -317,6 +314,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
             
             String key = null;
             JsonType<?> val = null;
+            Object data = null;
             
             boolean end = false;
             while (parser.hasNext() && !end) {
@@ -324,6 +322,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                 
                 switch (event) {
                     case START_OBJECT:
+                        parser.pushBack(Event.START_OBJECT);
                         val = com.livequery.types.JsonObject.newInstance().cast(value);
                         list.add(val);
                         break;
@@ -345,12 +344,13 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                         }
                         break;
                     case VALUE_STRING:
-                        String data = parser.getString();
+                        data = parser.getString();
                         val = com.livequery.types.JsonString.newInstance().cast(data);
                         list.add(val);
                         break;
                     case VALUE_NUMBER:
-                        val = com.livequery.types.JsonNumber.newInstance().cast(parser.getString());
+                        data = parser.getBigDecimal();
+                        val = com.livequery.types.JsonNumber.newInstance().cast(data);
                         list.add(val);
                         break;
                     case VALUE_TRUE:
@@ -369,12 +369,6 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                         throw new UnCastableObjectToInstanceTypeException(
                             String.format("Unknown event type encountered parsing input for JsonObject"));
                 }
-            }
-            
-            /* Close parser if no more tokens left to parse */
-            if (!parser.hasNext()) {
-                parser.close();
-                parser = null;
             }
             
         } catch (Exception e) {
