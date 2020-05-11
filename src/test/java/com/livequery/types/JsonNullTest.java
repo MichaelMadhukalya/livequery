@@ -1,14 +1,13 @@
 package com.livequery.types;
 
 import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
+import javax.json.JsonValue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 public class JsonNullTest {
-    
-    JsonNull jsonNull;
     
     @Before
     public void setUp() throws Exception {
@@ -19,15 +18,21 @@ public class JsonNullTest {
     }
     
     @Test
-    public void castNullObjectAsInput_Test() throws UnCastableObjectToInstanceTypeException {
-        jsonNull = JsonNull.newInstance();
-        jsonNull.cast(null);
-        Assert.assertTrue(jsonNull.nullable == null);
+    public void castJsonNullObjectAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonNull jsonNull = JsonNull.newInstance();
+        jsonNull.cast(JsonValue.NULL);
+        Assert.assertTrue(1 == 1);
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
     public void castNonNullObjectAsINputExpectedException_Test() throws UnCastableObjectToInstanceTypeException {
-        jsonNull = JsonNull.newInstance();
+        JsonNull jsonNull = JsonNull.newInstance();
         jsonNull.cast("test");
+    }
+    
+    @Test(expected = UnCastableObjectToInstanceTypeException.class)
+    public void castNullObjectAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonNull jsonNull = JsonNull.newInstance();
+        jsonNull.cast(null);
     }
 }

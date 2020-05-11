@@ -354,15 +354,15 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                         list.add(val);
                         break;
                     case VALUE_TRUE:
-                        val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.TRUE));
+                        val = com.livequery.types.JsonBoolean.newInstance().cast(JsonValue.TRUE);
                         list.add(val);
                         break;
                     case VALUE_FALSE:
-                        val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.FALSE));
+                        val = com.livequery.types.JsonBoolean.newInstance().cast(JsonValue.FALSE);
                         list.add(val);
                         break;
                     case VALUE_NULL:
-                        val = com.livequery.types.JsonNull.newInstance().cast(null);
+                        val = com.livequery.types.JsonNull.newInstance().cast(JsonValue.NULL);
                         list.add(val);
                         break;
                     default:

@@ -3,10 +3,9 @@ package com.livequery.types;
 import javax.json.JsonValue;
 
 public class JsonNull extends JsonType<JsonNull> implements JsonValue {
-    Object nullable;
+    static final JsonValue NULL_VALUE = JsonValue.NULL;
     
     private JsonNull() {
-        this.nullable = null;
     }
     
     @Override
@@ -16,7 +15,7 @@ public class JsonNull extends JsonType<JsonNull> implements JsonValue {
     
     @Override
     public String toString() {
-        return null;
+        return NULL_VALUE.toString();
     }
     
     public static final JsonNull newInstance() {
@@ -25,10 +24,10 @@ public class JsonNull extends JsonType<JsonNull> implements JsonValue {
     
     @Override
     public JsonNull cast(Object value) throws UnCastableObjectToInstanceTypeException {
-        if (null != value) {
-            throw new UnCastableObjectToInstanceTypeException(String.format("Can't convert non null object to JsonNull type"));
+        if (NULL_VALUE.equals(value)) {
+            return this;
         }
         
-        return this;
+        throw new UnCastableObjectToInstanceTypeException(String.format("Can't convert non null object to JsonNull type"));
     }
 }

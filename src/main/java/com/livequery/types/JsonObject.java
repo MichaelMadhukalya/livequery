@@ -294,21 +294,21 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
                         val = null;
                         break;
                     case VALUE_TRUE:
-                        val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.TRUE));
+                        val = com.livequery.types.JsonBoolean.newInstance().cast(JsonValue.TRUE);
                         map.put(key, val);
                         /* Reset key and value for next iteration */
                         key = null;
                         val = null;
                         break;
                     case VALUE_FALSE:
-                        val = com.livequery.types.JsonBoolean.newInstance().cast((Object) String.valueOf(Boolean.FALSE));
+                        val = com.livequery.types.JsonBoolean.newInstance().cast(JsonValue.FALSE);
                         map.put(key, val);
                         /* Reset key and value for next iteration */
                         key = null;
                         val = null;
                         break;
                     case VALUE_NULL:
-                        val = com.livequery.types.JsonNull.newInstance().cast(null);
+                        val = com.livequery.types.JsonNull.newInstance().cast(JsonValue.NULL);
                         map.put(key, val);
                         /* Reset key and value for next iteration */
                         key = null;

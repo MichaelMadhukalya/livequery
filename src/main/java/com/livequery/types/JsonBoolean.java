@@ -1,13 +1,12 @@
 package com.livequery.types;
 
 import javax.json.JsonValue;
-import org.apache.commons.lang3.StringUtils;
 
 public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     Boolean booleanValue;
     
-    private static final String TRUE_VALUE = "true";
-    private static final String FALSE_VALUE = "false";
+    static final JsonValue TRUE_VALUE = JsonValue.TRUE;
+    static final JsonValue FALSE_VALUE = JsonValue.FALSE;
     
     private JsonBoolean() {
         this.booleanValue = null;
@@ -28,14 +27,14 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
             return 0;
         }
         
-        throw new IllegalStateException(String.format("Uninitialized JsonBoolean type not associated with boolean value"));
+        throw new IllegalStateException(String.format("Uninitialized JsonBoolean type does not have boolean value"));
     }
     
     public String getString() {
         if (booleanValue == Boolean.TRUE) {
-            return TRUE_VALUE;
+            return TRUE_VALUE.toString();
         } else if (booleanValue == Boolean.FALSE) {
-            return FALSE_VALUE;
+            return FALSE_VALUE.toString();
         }
         
         throw new IllegalStateException(String.format("Uninitialized JsonBoolean type not associated with boolean value"));
@@ -73,18 +72,22 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
             throw new IllegalArgumentException("Can't construct valid JsonBoolean from null object");
         }
         
-        String val = (String) value;
-        if (StringUtils.equalsIgnoreCase(val, TRUE_VALUE) || StringUtils.equalsIgnoreCase(val, "1")) {
-            booleanValue = Boolean.TRUE;
-        } else if (StringUtils.equalsIgnoreCase(val, FALSE_VALUE) || StringUtils.equalsIgnoreCase(val, "0")) {
-            booleanValue = Boolean.FALSE;
-        }
-        
         if (null != booleanValue) {
             return this;
         }
         
-        throw new UnCastableObjectToInstanceTypeException(
-            String.format("Can't find a boolean target type for value = {%s}", value));
+        if (value.equals(TRUE_VALUE)) {
+            booleanValue = Boolean.TRUE;
+        } else if (value.equals(FALSE_VALUE)) {
+            booleanValue = Boolean.FALSE;
+        }
+        
+        try {
+            booleanValue = Boolean.parseBoolean(String.valueOf(value));
+        } catch (Exception e) {
+            throw new UnCastableObjectToInstanceTypeException(String.format("Unable to get valid boolean value from input"));
+        }
+        
+        return this;
     }
 }
