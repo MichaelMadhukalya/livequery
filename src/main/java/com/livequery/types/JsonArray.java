@@ -327,7 +327,8 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                         list.add(val);
                         break;
                     case END_OBJECT:
-                        break;
+                        throw new UnCastableObjectToInstanceTypeException(
+                            String.format("Error parsing input JSON unbalanced END_OBJECT object found"));
                     case START_ARRAY:
                         parser.pushBack(Event.START_ARRAY);
                         val = com.livequery.types.JsonArray.newInstance().cast(value);

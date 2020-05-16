@@ -269,7 +269,8 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
                         val = null;
                         break;
                     case END_ARRAY:
-                        break;
+                        throw new UnCastableObjectToInstanceTypeException(
+                            String.format("Error parsing input JSON unbalanced END_ARRAY object found"));
                     case KEY_NAME:
                         key = parser.getString();
                         if (StringUtils.isEmpty(key)) {

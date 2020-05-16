@@ -32,6 +32,11 @@ class JParser implements JsonParser, Closeable {
     }
     
     private JParser(String input) {
+        if (!validate(input)) {
+            throw new IllegalArgumentException(
+                String.format("Input JSON string {%s} has either unbalanced or out of order parenthesis", input));
+        }
+        
         this.input = input;
         this.jsonParser = Json.createParser(new StringReader(this.input));
     }
@@ -144,5 +149,47 @@ class JParser implements JsonParser, Closeable {
     @VisibleForTesting
     public static void cleanup() {
         cache.clear();
+    }
+    
+    /**
+     * Validate a given input string to verify if it is in valid JSON format. The validation is done based purely on checking of
+     * syntax to ensure that out of order parenthesis and un-balanced parenthesis are caught properly.
+     *
+     * @param input Input
+     * @return True if JSON string is valid, false otherwise
+     */
+    private boolean validate(String input) {
+        Stack<String> stack = new Stack<>();
+        String START_OBJECT = "{", END_OBJECT = "}";
+        String START_ARRAY = "[", END_ARRAY = "]";
+        
+        for (int i = 0; i < input.length(); i++) {
+            String current = String.valueOf(input.charAt(i));
+            if (current.equals(START_OBJECT) || current.equals(START_ARRAY)) {
+                stack.push(current);
+            } else if (current.equals(END_OBJECT)) {
+                if (stack.size() < 1) {
+                    return false;
+                } else if (!stack.peek().equals(START_OBJECT)) {
+                    return false;
+                } else {
+                    stack.push(current);
+                    stack.pop();
+                    stack.pop();
+                }
+            } else if (current.equals(END_ARRAY)) {
+                if (stack.size() < 1) {
+                    return false;
+                } else if (!stack.peek().equals(START_ARRAY)) {
+                    return false;
+                } else {
+                    stack.push(current);
+                    stack.pop();
+                    stack.pop();
+                }
+            }
+        }
+        
+        return stack.isEmpty();
     }
 }

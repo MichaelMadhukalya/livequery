@@ -51,5 +51,4 @@ public class JsonBooleanTest {
         jsonBoolean.cast("FALSE");
         Assert.assertTrue(jsonBoolean.getValueType() == ValueType.FALSE);
     }
-    
 }
