@@ -32,7 +32,8 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     public JsonArray getJsonArray(String s) {
         try {
             com.livequery.types.JsonArray array = com.livequery.types.JsonArray.newInstance();
-            array.cast(map.get(s));
+            JsonType<?> valueType = (JsonType<?>) map.get(s);
+            array.cast(valueType.toString());
             return array;
         } catch (UnCastableObjectToInstanceTypeException e) {
         }
@@ -43,8 +44,9 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     @Override
     public javax.json.JsonObject getJsonObject(String s) {
         try {
-            JsonObject object = new JsonObject();
-            object.cast(map.get(s));
+            JsonObject object = JsonObject.newInstance();
+            JsonType<?> valueType = (JsonType<?>) map.get(s);
+            object.cast(valueType.toString());
             return object;
         } catch (UnCastableObjectToInstanceTypeException e) {
         }
@@ -212,7 +214,8 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     public String toString() {
         StringBuffer buffer = new StringBuffer().append("{");
         map.entrySet().stream().forEach(e -> {
-            buffer.append("\"").append(e.getKey()).append("\"").append(":").append(e.getValue()).append(",");
+            JsonType<?> valueType = (JsonType<?>) e.getValue();
+            buffer.append("\"").append(e.getKey()).append("\"").append(":").append(valueType.toString()).append(",");
         });
         if (buffer.length() > 1 && buffer.charAt(buffer.length() - 1) == ',') {
             buffer.deleteCharAt(buffer.length() - 1);

@@ -27,7 +27,7 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
     
     @Override
     public String toString() {
-        return string;
+        return new StringBuffer().append("\"").append(string).append("\"").toString();
     }
     
     @Override

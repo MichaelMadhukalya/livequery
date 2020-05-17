@@ -24,8 +24,8 @@ public class JsonObjectTest {
         + "{\"key5\": \"value5\", \"key6\": {\"key7\": \"value7\", \"key8\" : \"value8\"}}}";
     
     String INPUT_5 = "{\"key1\": \"value1\", \"key2\": \"value2\", \"key3\": [1, 2, 3], \"key4\": "
-        + "{ \"key5\": \"value5\", \"key6\": \"value6\" }, \"key5\": [1, [2, [3, 4, 5]], {\"key6\": "
-        + "{\"key7\": [1, 2, {\"key8\": \"value8\", \"key9\": [1, 2, [[1,2,3], 4]]}]}}]}";
+        + "{ \"key5\": \"value5\", \"key6\": \"value6\"}, \"key7\": [1, [2, [3, 4, 5]], {\"key8\": "
+        + "{\"key9\": [1, 2, {\"key10\": \"value10\", \"key11\": [1, 2, [[1,2,3], 4]]}]}}]}";
     
     String INPUT_6 = "{\"key1\": \"value\", \"key2\": null}";
     
@@ -191,5 +191,13 @@ public class JsonObjectTest {
     public void emptyStringAsKeyInput_Test() throws UnCastableObjectToInstanceTypeException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_17);
+    }
+    
+    @Test
+    public void getJsonObjectAsValue_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_5);
+        javax.json.JsonObject jsonObject1 = jsonObject.getJsonObject("key4");
+        Assert.assertTrue(jsonObject1.size() == 2);
     }
 }

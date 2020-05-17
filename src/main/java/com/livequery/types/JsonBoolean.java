@@ -32,9 +32,9 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     
     public String getString() {
         if (booleanValue == Boolean.TRUE) {
-            return TRUE_VALUE.toString();
+            return Boolean.TRUE.toString();
         } else if (booleanValue == Boolean.FALSE) {
-            return FALSE_VALUE.toString();
+            return Boolean.FALSE.toString();
         }
         
         throw new IllegalStateException(String.format("Uninitialized JsonBoolean type not associated with boolean value"));

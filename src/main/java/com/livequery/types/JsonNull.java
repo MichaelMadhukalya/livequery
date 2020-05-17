@@ -15,7 +15,7 @@ public class JsonNull extends JsonType<JsonNull> implements JsonValue {
     
     @Override
     public String toString() {
-        return NULL_VALUE.toString();
+        return null;
     }
     
     public static final JsonNull newInstance() {

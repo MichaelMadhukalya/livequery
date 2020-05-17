@@ -285,7 +285,11 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     @Override
     public String toString() {
         StringBuffer buffer = new StringBuffer().append("[");
-        list.stream().forEach(e -> buffer.append(((Object) e).toString()).append(','));
+        list.stream().forEach(e -> {
+            JsonType<?> valueType = (JsonType<?>) e;
+            buffer.append(valueType.toString()).append(',');
+        });
+        
         if (buffer.length() > 1 && buffer.charAt(buffer.length() - 1) == ',') {
             buffer.deleteCharAt(buffer.length() - 1);
         }
