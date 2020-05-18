@@ -1,6 +1,7 @@
 package com.livequery.types;
 
 import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
+import javax.json.JsonValue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,7 +26,7 @@ public class JsonObjectTest {
     
     String INPUT_5 = "{\"key1\": \"value1\", \"key2\": \"value2\", \"key3\": [1, 2, 3], \"key4\": "
         + "{ \"key5\": \"value5\", \"key6\": \"value6\"}, \"key7\": [1, [2, [3, 4, 5]], {\"key8\": "
-        + "{\"key9\": [1, 2, {\"key10\": \"value10\", \"key11\": [1, 2, [[1,2,3], 4]]}]}}]}";
+        + "{\"key9\": [0.0096, 8.0E+02, {\"key10\": \"value10\", \"key11\": [1001.01, 2.1E-03, [[1.6E+02,0.2,3.14159], 4.3E+03]]}]}}]}";
     
     String INPUT_6 = "{\"key1\": \"value\", \"key2\": null}";
     
@@ -112,7 +113,10 @@ public class JsonObjectTest {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_6);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 2);
-        JsonNull jsonNull = JsonNull.newInstance().cast(jsonObject.get("key2"));
+        
+        JsonNull jsonNull = JsonNull.newInstance();
+        jsonNull.cast(jsonObject.get("key2"));
+        Assert.assertTrue(null != jsonNull);
     }
     
     @Test
@@ -174,7 +178,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void validScientificStringAsValueInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void validNumberValueInput_Test() throws UnCastableObjectToInstanceTypeException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_16);
         JsonNumber jsonNumber = JsonNumber.newInstance().cast(jsonObject.get("key"));
@@ -199,5 +203,91 @@ public class JsonObjectTest {
         jsonObject.cast(INPUT_5);
         javax.json.JsonObject jsonObject1 = jsonObject.getJsonObject("key4");
         Assert.assertTrue(jsonObject1.size() == 2);
+    }
+    
+    @Test
+    public void getJsonArrayAsValue_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_5);
+        javax.json.JsonArray jsonArray = jsonObject.getJsonArray("key7");
+        Assert.assertTrue(jsonArray.size() == 3);
+    }
+    
+    @Test
+    public void verifyNumberValues_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_5);
+        javax.json.JsonArray jsonArray = jsonObject.getJsonArray("key7");
+        Assert.assertTrue(jsonArray.size() == 3);
+        
+        JsonValue value = jsonArray.get(2);
+        JsonObject jsonObject1 = JsonObject.newInstance();
+        jsonObject1.cast(value);
+        Assert.assertTrue(jsonObject1.size() == 1);
+        
+        value = jsonObject1.getJsonObject("key8");
+        JsonObject jsonObject2 = JsonObject.newInstance();
+        jsonObject2.cast(value);
+        Assert.assertTrue(jsonObject2.size() == 1);
+        
+        value = jsonObject2.getJsonArray("key9");
+        JsonArray jsonArray1 = JsonArray.newInstance();
+        jsonArray1.cast(value);
+        Assert.assertTrue(jsonArray1.size() == 3);
+        
+        value = jsonArray1.get(0);
+        JsonNumber number1 = JsonNumber.newInstance();
+        number1.cast(value);
+        Assert.assertTrue(number1.toString().equals("0.0096"));
+        
+        value = jsonArray1.get(1);
+        JsonNumber number2 = JsonNumber.newInstance();
+        number2.cast(value);
+        Assert.assertTrue(number2.toString().equals("800.0"));
+        
+        value = jsonArray1.get(2);
+        JsonObject jsonObject3 = JsonObject.newInstance();
+        jsonObject3.cast(value);
+        Assert.assertTrue(jsonObject3.size() == 2);
+        
+        value = jsonObject3.get("key11");
+        JsonArray jsonArray2 = JsonArray.newInstance();
+        jsonArray2.cast(value);
+        Assert.assertTrue(jsonArray2.size() == 3);
+        
+        value = jsonArray2.get(0);
+        JsonNumber number3 = JsonNumber.newInstance();
+        number3.cast(value);
+        Assert.assertTrue(number3.toString().equals("1001.01"));
+        
+        value = jsonArray2.get(1);
+        JsonNumber number4 = JsonNumber.newInstance();
+        number4.cast(value);
+        Assert.assertTrue(number4.toString().equals("0.0021"));
+        
+        value = jsonArray2.get(2);
+        JsonArray jsonArray3 = JsonArray.newInstance();
+        jsonArray3.cast(value);
+        Assert.assertTrue(jsonArray3.size() == 2);
+        
+        value = jsonArray3.get(0);
+        JsonArray jsonArray4 = JsonArray.newInstance();
+        jsonArray4.cast(value);
+        Assert.assertTrue(jsonArray4.size() == 3);
+        
+        value = jsonArray4.get(0);
+        JsonNumber number5 = JsonNumber.newInstance();
+        number5.cast(value);
+        Assert.assertTrue(number5.toString().equals("160.0"));
+        
+        value = jsonArray4.get(1);
+        JsonNumber number6 = JsonNumber.newInstance();
+        number6.cast(value);
+        Assert.assertTrue(number6.toString().equals("0.2"));
+        
+        value = jsonArray4.get(2);
+        JsonNumber number7 = JsonNumber.newInstance();
+        number7.cast(value);
+        Assert.assertTrue(number7.toString().equals("3.14159"));
     }
 }

@@ -214,9 +214,15 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     public String toString() {
         StringBuffer buffer = new StringBuffer().append("{");
         map.entrySet().stream().forEach(e -> {
-            JsonType<?> valueType = (JsonType<?>) e.getValue();
-            buffer.append("\"").append(e.getKey()).append("\"").append(":").append(valueType.toString()).append(",");
+            try {
+                JsonType<?> keyType = com.livequery.types.JsonString.newInstance();
+                keyType.cast(e.getKey());
+                JsonType<?> valueType = (JsonType<?>) e.getValue();
+                buffer.append(keyType.toString()).append(":").append(valueType.toString()).append(",");
+            } catch (UnCastableObjectToInstanceTypeException ex) {
+            }
         });
+        
         if (buffer.length() > 1 && buffer.charAt(buffer.length() - 1) == ',') {
             buffer.deleteCharAt(buffer.length() - 1);
         }
@@ -235,7 +241,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
         }
         
         try {
-            parser = JParser.getOrCreateNewInstance((String) value);
+            parser = JParser.getOrCreateNewInstance(value.toString());
             
             Event event = parser.next();
             if (!event.equals(Event.START_OBJECT)) {

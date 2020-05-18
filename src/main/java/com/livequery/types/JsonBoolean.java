@@ -72,10 +72,6 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
             throw new IllegalArgumentException("Can't construct valid JsonBoolean from null object");
         }
         
-        if (null != booleanValue) {
-            return this;
-        }
-        
         if (value.equals(TRUE_VALUE)) {
             booleanValue = Boolean.TRUE;
         } else if (value.equals(FALSE_VALUE)) {
@@ -84,6 +80,7 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
         
         try {
             booleanValue = Boolean.parseBoolean(String.valueOf(value));
+            super.value = this;
         } catch (Exception e) {
             throw new UnCastableObjectToInstanceTypeException(String.format("Unable to get valid boolean value from input"));
         }

@@ -19,4 +19,8 @@ public abstract class JsonType<T extends JsonType> implements JsonValue {
             super(message);
         }
     }
+    
+    public T typeOf() {
+        return value;
+    }
 }

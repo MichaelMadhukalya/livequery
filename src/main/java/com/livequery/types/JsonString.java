@@ -36,11 +36,8 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
             throw new IllegalArgumentException("Can't construct valid JsonString from null object");
         }
         
-        if (null != string) {
-            return this;
-        }
-        
-        string = (String) value;
+        string = value.toString();
+        super.value = this;
         return this;
     }
 }

@@ -308,7 +308,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
         }
         
         try {
-            parser = JParser.getOrCreateNewInstance((String) value);
+            parser = JParser.getOrCreateNewInstance(value.toString());
             
             Event event = parser.next();
             if (!event.equals(Event.START_ARRAY)) {
@@ -374,6 +374,12 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                         throw new UnCastableObjectToInstanceTypeException(
                             String.format("Unknown event type encountered parsing input for JsonObject"));
                 }
+            }
+            
+            /* Close parser if no more tokens are left to parse */
+            if (!parser.hasNext() && !parser.isClose()) {
+                parser.close();
+                parser = null;
             }
             
         } catch (Exception e) {

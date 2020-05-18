@@ -74,12 +74,8 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
             throw new IllegalArgumentException("Can't construct valid JsonNumber from null object");
         }
         
-        if (null != super.value) {
-            return this;
-        }
-        
         try {
-            decimalValue = new BigDecimal(String.valueOf(value));
+            decimalValue = new BigDecimal(value.toString());
         } catch (NumberFormatException e) {
         }
         
