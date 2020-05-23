@@ -1,11 +1,17 @@
 package com.livequery.types;
 
 import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class JsonObjectTest {
@@ -62,6 +68,10 @@ public class JsonObjectTest {
     @After
     public void tearDown() throws Exception {
         JParser.cleanup();
+    }
+    
+    @BeforeClass
+    public static void after() {
     }
     
     @Test
@@ -407,8 +417,238 @@ public class JsonObjectTest {
     public void verifyStringValueWithNullWordAsInput_Test() throws UnCastableObjectToInstanceTypeException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_19);
-        
         JsonType<?> valueType = (JsonType<?>) jsonObject.get("key");
         Assert.assertTrue(valueType instanceof JsonString);
     }
+    
+    @Test
+    public void writeToFile0_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_0);
+        
+        /* Write Json to file */
+        File file = new File("File_0.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+        
+        Assert.assertTrue(file.exists());
+        
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile1_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_1);
+        
+        /* Write Json to file */
+        File file = new File("File_1.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile2_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_2);
+        
+        /* Write Json to file */
+        File file = new File("File_2.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile3_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_3);
+        
+        /* Write Json to file */
+        File file = new File("File_3.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile4_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_4);
+        
+        /* Write Json to file */
+        File file = new File("File_4.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile5_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_5);
+        
+        /* Write Json to file */
+        File file = new File("File_5.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile6_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_6);
+        
+        /* Write Json to file */
+        File file = new File("File_6.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile7_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_7);
+        
+        /* Write Json to file */
+        File file = new File("File_7.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile8_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_8);
+        
+        /* Write Json to file */
+        File file = new File("File_8.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    
+    @Test
+    public void writeToFile11_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_11);
+        
+        /* Write Json to file */
+        File file = new File("File_11.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile16_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_16);
+        
+        /* Write Json to file */
+        File file = new File("File_16.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+        /* delete file */
+        file.delete();
+    }
+    
+    @Test
+    public void writeToFile18_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_18);
+        
+        /* Write Json to file */
+        File file = new File("File_18.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write((JsonType) jsonObject, outputStream);
+        outputStream.flush();
+        outputStream.close();
+    
+        Assert.assertTrue(file.exists() && file.length() > 0);
+    
+    
+        /* delete file */
+        file.delete();
+    }
+    
 }
