@@ -129,7 +129,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     @Override
     public boolean isNull(String s) {
         JsonType<?> valueType = (JsonType<?>) map.get(s);
-        if (null != valueType && valueType.toString().equalsIgnoreCase("null")) {
+        if (null != valueType && valueType.toString().equals("null")) {
             return true;
         }
         

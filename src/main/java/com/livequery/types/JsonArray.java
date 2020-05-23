@@ -93,7 +93,8 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     
     @Override
     public String getString(int i) {
-        return (String) list.get(i);
+        JsonType<?> valueType = (JsonType<?>) list.get(i);
+        return valueType.typeOf().toString();
     }
     
     @Override
@@ -111,7 +112,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
         } catch (UnCastableObjectToInstanceTypeException e) {
         }
         
-        return 0;
+        return Integer.MIN_VALUE;
     }
     
     @Override
@@ -140,8 +141,12 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     
     @Override
     public boolean isNull(int i) {
-        JsonValue value = (JsonValue) list.get(i);
-        return value == null ? true : false;
+        JsonType<?> valueType = (JsonType<?>) list.get(i);
+        if (null != valueType && valueType.toString().equals("null")) {
+            return true;
+        }
+        
+        return false;
     }
     
     @Override

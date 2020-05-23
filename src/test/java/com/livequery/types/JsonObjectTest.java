@@ -646,7 +646,6 @@ public class JsonObjectTest {
         
         Assert.assertTrue(file.exists() && file.length() > 0);
         
-        
         /* delete file */
         file.delete();
     }
