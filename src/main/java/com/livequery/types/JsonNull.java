@@ -15,7 +15,7 @@ public class JsonNull extends JsonType<JsonNull> implements JsonValue {
     
     @Override
     public String toString() {
-        return null;
+        return "null";
     }
     
     public static final JsonNull newInstance() {
@@ -25,6 +25,7 @@ public class JsonNull extends JsonType<JsonNull> implements JsonValue {
     @Override
     public JsonNull cast(Object value) throws UnCastableObjectToInstanceTypeException {
         if (NULL_VALUE.equals(value)) {
+            super.valueType = this;
             return this;
         }
         

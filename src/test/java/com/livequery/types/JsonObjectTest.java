@@ -2,6 +2,7 @@ package com.livequery.types;
 
 import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,6 +50,10 @@ public class JsonObjectTest {
     String INPUT_16 = "{\"key\": 2.15E+05}";
     
     String INPUT_17 = "{\"\": 2.15E+05}";
+    
+    String INPUT_18 = "{\"key\": null}";
+    
+    String INPUT_19 = "{\"key\": \"null\"}";
     
     @Before
     public void setUp() throws Exception {
@@ -114,8 +119,12 @@ public class JsonObjectTest {
         jsonObject.cast(INPUT_6);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 2);
         
+        JsonType<?> valueType = (JsonType) jsonObject.get("key2");
+        Assert.assertTrue(valueType.typeOf() instanceof JsonNull);
+        Assert.assertTrue((((JsonNull) valueType.typeOf()).toString().equals("null")));
+        
         JsonNull jsonNull = JsonNull.newInstance();
-        jsonNull.cast(jsonObject.get("key2"));
+        jsonNull.cast(valueType);
         Assert.assertTrue(null != jsonNull);
     }
     
@@ -289,5 +298,117 @@ public class JsonObjectTest {
         JsonNumber number7 = JsonNumber.newInstance();
         number7.cast(value);
         Assert.assertTrue(number7.toString().equals("3.14159"));
+    }
+    
+    @Test
+    public void getNumberValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_16);
+        javax.json.JsonNumber jsonNumber = jsonObject.getJsonNumber("key");
+        Assert.assertTrue(jsonNumber.toString().equals("215000.0"));
+    }
+    
+    @Test
+    public void getJsonStringValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_1);
+        javax.json.JsonString jsonString = jsonObject.getJsonString("key");
+        Assert.assertTrue(jsonString.toString().equals("\"value\""));
+    }
+    
+    @Test
+    public void getStringValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_1);
+        String s = jsonObject.getString("key");
+        Assert.assertTrue(null != s && s.equals("\"value\""));
+    }
+    
+    @Test
+    public void getIntValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_16);
+        int num = jsonObject.getInt("key");
+        Assert.assertTrue(num == 215000);
+    }
+    
+    @Test
+    public void getBooleanValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_7);
+        Boolean value = jsonObject.getBoolean("key1");
+        Assert.assertTrue(value == Boolean.FALSE);
+    }
+    
+    @Test
+    public void getNullValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_6);
+        Assert.assertTrue(jsonObject.isNull("key3") == false);
+    }
+    
+    @Test
+    public void nullValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_18);
+        Assert.assertTrue(jsonObject.isNull("key") == true);
+    }
+    
+    @Test
+    public void getValueType_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_1);
+        Assert.assertTrue(jsonObject.getValueType().equals(ValueType.OBJECT));
+    }
+    
+    @Test
+    public void isEmpty_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_1);
+        Assert.assertTrue(jsonObject.isEmpty() == false);
+    }
+    
+    @Test
+    public void clearAndVerifyIsEmpty_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_1);
+        jsonObject.clear();
+        Assert.assertTrue(jsonObject.isEmpty());
+    }
+    
+    @Test
+    public void verifyContainsKey_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_5);
+        Assert.assertTrue(jsonObject.containsKey("key4"));
+    }
+    
+    @Test
+    public void verifyContainsValue_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_5);
+        
+        JsonType<?> valueType = (JsonType<?>) jsonObject.get("key4");
+        Assert.assertTrue(jsonObject.containsValue(valueType.typeOf()) == true);
+        
+        JsonObject jsonObject1 = JsonObject.newInstance();
+        jsonObject1.cast(valueType);
+        Assert.assertTrue(jsonObject.containsValue(jsonObject1) == false);
+    }
+    
+    @Test
+    public void verifyEntrySetElementCount_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_5);
+        Assert.assertTrue(jsonObject.entrySet().size() == 5);
+    }
+    
+    @Test
+    public void verifyStringValueWithNullWordAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_19);
+        
+        JsonType<?> valueType = (JsonType<?>) jsonObject.get("key");
+        Assert.assertTrue(valueType instanceof JsonString);
     }
 }

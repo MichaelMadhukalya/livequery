@@ -27,7 +27,11 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
     
     @Override
     public String toString() {
-        return new StringBuffer().append("\"").append(string).append("\"").toString();
+        if (null != string && string.charAt(0) == '\"' && string.charAt(string.length() - 1) == '\"') {
+            return string;
+        } else {
+            return new StringBuffer().append("\"").append(string).append("\"").toString();
+        }
     }
     
     @Override
@@ -36,8 +40,8 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
             throw new IllegalArgumentException("Can't construct valid JsonString from null object");
         }
         
-        string = value.toString();
-        super.value = this;
+        string = String.valueOf(value);
+        super.valueType = this;
         return this;
     }
 }

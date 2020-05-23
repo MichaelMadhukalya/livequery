@@ -382,6 +382,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                 parser = null;
             }
             
+            super.valueType = this;
         } catch (Exception e) {
             throw new UnCastableObjectToInstanceTypeException(
                 String.format("Exception creating JsonArray from input string {%s}: {%s}", value, e));

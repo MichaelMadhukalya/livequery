@@ -3,7 +3,7 @@ package com.livequery.types;
 import javax.json.JsonValue;
 
 public abstract class JsonType<T extends JsonType> implements JsonValue {
-    T value;
+    T valueType;
     
     JsonType() {
     }
@@ -21,6 +21,6 @@ public abstract class JsonType<T extends JsonType> implements JsonValue {
     }
     
     public T typeOf() {
-        return value;
+        return valueType;
     }
 }

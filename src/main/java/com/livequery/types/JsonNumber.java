@@ -76,16 +76,15 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
         
         try {
             decimalValue = new BigDecimal(value.toString());
+            super.valueType = this;
         } catch (NumberFormatException e) {
         }
         
-        if (decimalValue != null) {
-            super.value = this;
+        if (null != decimalValue) {
             return this;
-        } else {
-            throw new UnCastableObjectToInstanceTypeException(
-                String.format("Can't find a valid decimal target type for source value = {%s}", value));
         }
+        
+        throw new UnCastableObjectToInstanceTypeException(String.format("Can't find a decimal type for value = {%s}", value));
     }
     
 }

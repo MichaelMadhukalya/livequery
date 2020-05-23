@@ -80,7 +80,8 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public String getString(String s) {
-        return (String) map.get(s);
+        JsonType<?> valueType = (JsonType<?>) map.get(s);
+        return valueType.typeOf().toString();
     }
     
     @Override
@@ -98,7 +99,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
         } catch (UnCastableObjectToInstanceTypeException e) {
         }
         
-        return 0;
+        return Integer.MIN_VALUE;
     }
     
     @Override
@@ -127,7 +128,12 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public boolean isNull(String s) {
-        return map.get(s) == null ? true : false;
+        JsonType<?> valueType = (JsonType<?>) map.get(s);
+        if (null != valueType && valueType.toString().equalsIgnoreCase("null")) {
+            return true;
+        }
+        
+        return false;
     }
     
     @Override
@@ -166,6 +172,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
         JsonValue value = null;
         if (map.containsKey(o)) {
             value = (JsonValue) map.get(o);
+            map.remove(o);
         }
         
         return value;
@@ -173,10 +180,6 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public void putAll(Map<? extends String, ? extends JsonValue> map) {
-        if (MapUtils.isNotEmpty(this.map)) {
-            this.map.clear();
-        }
-        
         map.entrySet().stream().forEach(e -> this.map.put(e.getKey(), e.getValue()));
     }
     
@@ -201,7 +204,6 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
         Set<Entry<String, JsonValue>> set = map.entrySet().stream()
             .map(e -> Maps.immutableEntry((String) e.getKey(), (JsonValue) e.getValue()))
             .collect(Collectors.toSet());
-        
         return set;
     }
     
@@ -335,6 +337,8 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
                 parser.close();
                 parser = null;
             }
+            
+            super.valueType = this;
         } catch (Exception e) {
             throw new UnCastableObjectToInstanceTypeException(
                 String.format("Exception creating JsonObject from input string {%s}: {%s}", value, e));
