@@ -23,11 +23,10 @@ public interface IJsonWriter<T extends JsonType> extends Closeable {
     void write(JsonType<T> object, OutputStream out, Charset charset);
     
     /**
-     * Write a JsonType object to an output stream in compressed binary format. It is upto the implementation to select a
-     * suitable compression technique for this purpose.
+     * Write an array of JsonType object to an output stream in serialized format using the default encoding scheme.
      *
-     * @param object Input JsonType object
+     * @param objects Input array of JsonType objects
      * @param out output stream
      */
-    void compress(JsonType<T> object, OutputStream out);
+    void write(JsonType<T>[] objects, OutputStream out);
 }

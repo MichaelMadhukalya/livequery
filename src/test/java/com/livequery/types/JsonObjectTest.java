@@ -452,9 +452,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -471,9 +471,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -490,9 +490,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -509,9 +509,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -528,9 +528,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -547,9 +547,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -566,9 +566,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -585,9 +585,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -605,9 +605,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -624,9 +624,9 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
+        
         /* delete file */
         file.delete();
     }
@@ -643,12 +643,57 @@ public class JsonObjectTest {
         jsonWriter.write((JsonType) jsonObject, outputStream);
         outputStream.flush();
         outputStream.close();
-    
+        
         Assert.assertTrue(file.exists() && file.length() > 0);
-    
-    
+        
+        
         /* delete file */
         file.delete();
     }
     
+    @Test
+    public void writeToFileArrayOfJsonObjects_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+        JsonObject jsonObject1 = JsonObject.newInstance();
+        jsonObject1.cast(INPUT_1);
+        
+        JsonObject jsonObject2 = JsonObject.newInstance();
+        jsonObject2.cast(INPUT_2);
+        
+        JsonObject jsonObject3 = JsonObject.newInstance();
+        jsonObject3.cast(INPUT_3);
+        
+        JsonObject jsonObject4 = JsonObject.newInstance();
+        jsonObject4.cast(INPUT_4);
+        
+        JsonObject jsonObject5 = JsonObject.newInstance();
+        jsonObject5.cast(INPUT_5);
+        
+        JsonObject jsonObject6 = JsonObject.newInstance();
+        jsonObject6.cast(INPUT_6);
+        
+        JsonObject jsonObject7 = JsonObject.newInstance();
+        jsonObject7.cast(INPUT_7);
+        
+        JsonObject jsonObject8 = JsonObject.newInstance();
+        jsonObject8.cast(INPUT_8);
+        
+        JsonObject jsonObject19 = JsonObject.newInstance();
+        jsonObject19.cast(INPUT_19);
+        
+        JsonType[] jsonObjects = new JsonType[]{jsonObject1, jsonObject2, jsonObject3, jsonObject4, jsonObject5, jsonObject6,
+            jsonObject7, jsonObject8, jsonObject19};
+        
+        /* Write Json to file */
+        File file = new File("File_20.txt");
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file));
+        JsonWriter jsonWriter = new JsonWriter();
+        jsonWriter.write(jsonObjects, outputStream);
+        outputStream.flush();
+        outputStream.close();
+        
+        Assert.assertTrue(file.exists() && file.length() > 0);
+        
+        /* delete file */
+        file.delete();
+    }
 }
