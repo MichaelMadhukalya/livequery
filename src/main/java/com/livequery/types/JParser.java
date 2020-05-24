@@ -152,8 +152,9 @@ class JParser implements JsonParser, Closeable {
     }
     
     /**
-     * Validate a given input string to verify if it is in valid JSON format. The validation is done based purely on checking of
-     * syntax to ensure that out of order parenthesis and un-balanced parenthesis are caught properly.
+     * Validate a given input string to verify if it is in valid JSON format. The validation is done based on checking of syntax
+     * to ensure that out of order parenthesis and un-balanced parenthesis are caught properly. However, semantic verification
+     * is only done at the time of parsing e.g. ensuring that every key type is represented as a string.
      *
      * @param input Input
      * @return True if JSON string is valid, false otherwise

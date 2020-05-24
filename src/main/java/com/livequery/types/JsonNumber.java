@@ -15,7 +15,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
     
     @Override
     public boolean isIntegral() {
-        return this.decimalValue.scale() > 0 ? false : true;
+        return decimalValue.scale() <= 0;
     }
     
     @Override
@@ -55,7 +55,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
     
     @Override
     public BigDecimal bigDecimalValue() {
-        return decimalValue != null ? decimalValue : null;
+        return decimalValue;
     }
     
     @Override
