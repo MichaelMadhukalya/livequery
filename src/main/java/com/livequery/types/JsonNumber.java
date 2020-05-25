@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonNumber {
-    BigDecimal decimalValue;
+    BigDecimal number;
     
     private JsonNumber() {
     }
@@ -15,47 +15,47 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
     
     @Override
     public boolean isIntegral() {
-        return decimalValue.scale() <= 0;
+        return number.scale() <= 0;
     }
     
     @Override
     public int intValue() {
-        return decimalValue.intValue();
+        return number.intValue();
     }
     
     @Override
     public int intValueExact() {
-        return decimalValue.intValueExact();
+        return number.intValueExact();
     }
     
     @Override
     public long longValue() {
-        return decimalValue.longValue();
+        return number.longValue();
     }
     
     @Override
     public long longValueExact() {
-        return decimalValue.longValueExact();
+        return number.longValueExact();
     }
     
     @Override
     public BigInteger bigIntegerValue() {
-        return decimalValue.toBigInteger();
+        return number.toBigInteger();
     }
     
     @Override
     public BigInteger bigIntegerValueExact() {
-        return decimalValue.toBigIntegerExact();
+        return number.toBigIntegerExact();
     }
     
     @Override
     public double doubleValue() {
-        return decimalValue.doubleValue();
+        return number.doubleValue();
     }
     
     @Override
     public BigDecimal bigDecimalValue() {
-        return decimalValue;
+        return number;
     }
     
     @Override
@@ -75,12 +75,12 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
         }
         
         try {
-            decimalValue = new BigDecimal(value.toString());
+            this.number = new BigDecimal(value.toString());
             super.valueType = this;
         } catch (NumberFormatException e) {
         }
         
-        if (null != decimalValue) {
+        if (null != this.number) {
             return this;
         }
         
