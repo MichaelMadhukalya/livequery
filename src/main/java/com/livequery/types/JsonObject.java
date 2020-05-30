@@ -1,13 +1,9 @@
 package com.livequery.types;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonString;
@@ -81,7 +77,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     @Override
     public String getString(String s) {
         JsonType<?> valueType = (JsonType<?>) map.get(s);
-        return valueType.typeOf().toString();
+        return valueType.valueOf().toString();
     }
     
     @Override
@@ -190,21 +186,20 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public Set<String> keySet() {
-        return new ImmutableSet.Builder<String>().addAll((Iterable<? extends String>) map.keySet()).build();
+        Set<?> set = map.keySet();
+        return (Set<String>) set;
     }
     
     @Override
     public Collection<JsonValue> values() {
-        return Collections.<JsonValue>unmodifiableCollection(
-            map.values().stream().map(e -> (JsonValue) e).collect(Collectors.toList()));
+        Collection<?> values = map.values();
+        return (Collection<JsonValue>) values;
     }
     
     @Override
     public Set<Entry<String, JsonValue>> entrySet() {
-        Set<Entry<String, JsonValue>> set = map.entrySet().stream()
-            .map(e -> Maps.immutableEntry((String) e.getKey(), (JsonValue) e.getValue()))
-            .collect(Collectors.toSet());
-        return set;
+        Set<?> set = map.entrySet();
+        return (Set<Entry<String, JsonValue>>) set;
     }
     
     @Override
@@ -338,7 +333,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
                 parser = null;
             }
             
-            super.valueType = this;
+            super.value = this;
         } catch (Exception e) {
             throw new UnCastableObjectToInstanceTypeException(
                 String.format("Exception creating JsonObject from input string {%s}: {%s}", value, e));

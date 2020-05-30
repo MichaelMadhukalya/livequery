@@ -80,7 +80,7 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
         
         try {
             booleanValue = Boolean.parseBoolean(String.valueOf(value));
-            super.valueType = this;
+            super.value = this;
         } catch (Exception e) {
             throw new UnCastableObjectToInstanceTypeException(String.format("Unable to get valid boolean value from input"));
         }

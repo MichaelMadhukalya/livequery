@@ -41,7 +41,7 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
         }
         
         string = String.valueOf(value);
-        super.valueType = this;
+        super.value = this;
         return this;
     }
 }

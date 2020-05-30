@@ -130,8 +130,8 @@ public class JsonObjectTest {
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 2);
         
         JsonType<?> valueType = (JsonType) jsonObject.get("key2");
-        Assert.assertTrue(valueType.typeOf() instanceof JsonNull);
-        Assert.assertTrue((((JsonNull) valueType.typeOf()).toString().equals("null")));
+        Assert.assertTrue(valueType.valueOf() instanceof JsonNull);
+        Assert.assertTrue((((JsonNull) valueType.valueOf()).toString().equals("null")));
         
         JsonNull jsonNull = JsonNull.newInstance();
         jsonNull.cast(valueType);
@@ -399,7 +399,7 @@ public class JsonObjectTest {
         jsonObject.cast(INPUT_5);
         
         JsonType<?> valueType = (JsonType<?>) jsonObject.get("key4");
-        Assert.assertTrue(jsonObject.containsValue(valueType.typeOf()) == true);
+        Assert.assertTrue(jsonObject.containsValue(valueType.valueOf()) == true);
         
         JsonObject jsonObject1 = JsonObject.newInstance();
         jsonObject1.cast(valueType);

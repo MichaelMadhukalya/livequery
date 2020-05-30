@@ -76,7 +76,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
         
         try {
             this.number = new BigDecimal(value.toString());
-            super.valueType = this;
+            super.value = this;
         } catch (NumberFormatException e) {
         }
         

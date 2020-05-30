@@ -94,7 +94,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     @Override
     public String getString(int i) {
         JsonType<?> valueType = (JsonType<?>) list.get(i);
-        return valueType.typeOf().toString();
+        return valueType.valueOf().toString();
     }
     
     @Override
@@ -387,7 +387,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                 parser = null;
             }
             
-            super.valueType = this;
+            super.value = this;
         } catch (Exception e) {
             throw new UnCastableObjectToInstanceTypeException(
                 String.format("Exception creating JsonArray from input string {%s}: {%s}", value, e));
