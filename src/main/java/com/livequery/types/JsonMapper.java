@@ -34,6 +34,7 @@ public class JsonMapper {
             jsonArray.cast(input);
             list = toList(jsonArray);
         } catch (UnCastableObjectToInstanceTypeException e) {
+            logger.error(String.format("Exception getting list object from input string: {%s}", e));
         }
         
         return list;
