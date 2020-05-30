@@ -1,9 +1,12 @@
 package com.livequery.types;
 
+import avro.shaded.com.google.common.collect.ImmutableSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonString;
@@ -186,14 +189,13 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public Set<String> keySet() {
-        Set<?> set = map.keySet();
-        return (Set<String>) set;
+        return new ImmutableSet.Builder<String>().addAll((Iterable<? extends String>) map.keySet()).build();
     }
     
     @Override
     public Collection<JsonValue> values() {
-        Collection<?> values = map.values();
-        return (Collection<JsonValue>) values;
+        return Collections.<JsonValue>unmodifiableCollection(
+            map.values().stream().map(e -> (JsonValue) e).collect(Collectors.toList()));
     }
     
     @Override
