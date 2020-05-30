@@ -23,7 +23,7 @@ public class JsonNull extends JsonType<JsonNull> implements JsonValue {
     }
     
     @Override
-    public JsonNull cast(Object value) throws UnCastableObjectToInstanceTypeException {
+    public JsonNull cast(Object value) {
         if (NULL_VALUE.equals(value)) {
             super.value = this;
             return this;

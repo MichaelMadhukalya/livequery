@@ -1,6 +1,5 @@
 package com.livequery.types;
 
-import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import javax.json.JsonArray;
@@ -23,7 +22,7 @@ public class JsonNumberTest {
     }
     
     @Test
-    public void inputAsArrayOfNumbers_test() throws UnCastableObjectToInstanceTypeException {
+    public void inputAsArrayOfNumbers_test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(input);
         Assert.assertTrue(null != jsonObject && jsonObject.size() == 1);
@@ -60,7 +59,7 @@ public class JsonNumberTest {
     }
     
     @Test
-    public void verifyCorrectValueType_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyCorrectValueType_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(input);
         Assert.assertTrue(null != jsonObject && jsonObject.size() == 1);

@@ -40,7 +40,7 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
         throw new IllegalStateException(String.format("Uninitialized JsonBoolean type not associated with boolean value"));
     }
     
-    public JsonNumber getJsonNumber() throws UnCastableObjectToInstanceTypeException {
+    public JsonNumber getJsonNumber() {
         if (booleanValue == Boolean.TRUE) {
             return JsonNumber.newInstance().cast((Object) String.valueOf(1));
         } else if (booleanValue == Boolean.FALSE) {
@@ -67,7 +67,7 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
     }
     
     @Override
-    public JsonBoolean cast(Object value) throws UnCastableObjectToInstanceTypeException {
+    public JsonBoolean cast(Object value) {
         if (null == value) {
             throw new IllegalArgumentException("Can't construct valid JsonBoolean from null object");
         }

@@ -35,7 +35,7 @@ public class JsonString extends JsonType<JsonString> implements javax.json.JsonS
     }
     
     @Override
-    public JsonString cast(Object value) throws UnCastableObjectToInstanceTypeException {
+    public JsonString cast(Object value) {
         if (null == value) {
             throw new IllegalArgumentException("Can't construct valid JsonString from null object");
         }

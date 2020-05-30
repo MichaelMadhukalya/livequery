@@ -29,52 +29,32 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public JsonArray getJsonArray(String s) {
-        try {
-            com.livequery.types.JsonArray array = com.livequery.types.JsonArray.newInstance();
-            JsonType<?> valueType = (JsonType<?>) map.get(s);
-            array.cast(valueType.toString());
-            return array;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return null;
+        com.livequery.types.JsonArray array = com.livequery.types.JsonArray.newInstance();
+        JsonType<?> valueType = (JsonType<?>) map.get(s);
+        array.cast(valueType.toString());
+        return array;
     }
     
     @Override
     public javax.json.JsonObject getJsonObject(String s) {
-        try {
-            JsonObject object = JsonObject.newInstance();
-            JsonType<?> valueType = (JsonType<?>) map.get(s);
-            object.cast(valueType.toString());
-            return object;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return null;
+        JsonObject object = JsonObject.newInstance();
+        JsonType<?> valueType = (JsonType<?>) map.get(s);
+        object.cast(valueType.toString());
+        return object;
     }
     
     @Override
     public JsonNumber getJsonNumber(String s) {
-        try {
-            com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
-            number.cast(map.get(s));
-            return number;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return null;
+        com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+        number.cast(map.get(s));
+        return number;
     }
     
     @Override
     public JsonString getJsonString(String s) {
-        try {
-            com.livequery.types.JsonString string = com.livequery.types.JsonString.newInstance();
-            string.cast(map.get(s));
-            return string;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return null;
+        com.livequery.types.JsonString string = com.livequery.types.JsonString.newInstance();
+        string.cast(map.get(s));
+        return string;
     }
     
     @Override
@@ -91,14 +71,9 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public int getInt(String s) {
-        try {
-            com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
-            number.cast(map.get(s));
-            return number.intValue();
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return Integer.MIN_VALUE;
+        com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+        number.cast(map.get(s));
+        return number.intValue();
     }
     
     @Override
@@ -109,14 +84,9 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     
     @Override
     public boolean getBoolean(String s) {
-        try {
-            com.livequery.types.JsonBoolean jsonBoolean = JsonBoolean.newInstance();
-            jsonBoolean.cast(map.get(s));
-            return jsonBoolean.booleanValue;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return Boolean.FALSE;
+        com.livequery.types.JsonBoolean jsonBoolean = JsonBoolean.newInstance();
+        jsonBoolean.cast(map.get(s));
+        return jsonBoolean.booleanValue;
     }
     
     @Override
@@ -213,13 +183,10 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     public String toString() {
         StringBuffer buffer = new StringBuffer().append("{");
         map.entrySet().stream().forEach(e -> {
-            try {
-                JsonType<?> keyType = com.livequery.types.JsonString.newInstance();
-                keyType.cast(e.getKey());
-                JsonType<?> valueType = (JsonType<?>) e.getValue();
-                buffer.append(keyType.toString()).append(":").append(valueType.toString()).append(",");
-            } catch (UnCastableObjectToInstanceTypeException ex) {
-            }
+            JsonType<?> keyType = com.livequery.types.JsonString.newInstance();
+            keyType.cast(e.getKey());
+            JsonType<?> valueType = (JsonType<?>) e.getValue();
+            buffer.append(keyType.toString()).append(":").append(valueType.toString()).append(",");
         });
         
         if (buffer.length() > 1 && buffer.charAt(buffer.length() - 1) == ',') {
@@ -230,7 +197,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
     }
     
     @Override
-    public JsonObject cast(Object value) throws UnCastableObjectToInstanceTypeException {
+    public JsonObject cast(Object value) {
         if (null == value) {
             throw new IllegalArgumentException("Can't construct valid JsonObject from null object");
         }

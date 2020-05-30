@@ -1,6 +1,5 @@
 package com.livequery.types;
 
-import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -36,8 +35,7 @@ public class JParserTest {
     }
     
     @Test
-    public void verifyAsyncParserAccess_Test()
-        throws UnCastableObjectToInstanceTypeException, InterruptedException, ExecutionException, TimeoutException {
+    public void verifyAsyncParserAccess_Test() throws InterruptedException, ExecutionException, TimeoutException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(input_1);
         
@@ -49,12 +47,9 @@ public class JParserTest {
     }
     
     private void createJsonObject() {
-        try {
-            JsonObject jsonObject = JsonObject.newInstance();
-            jsonObject.cast(input_1);
-            Assert.assertTrue(null != jsonObject && jsonObject.size() == 5);
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(input_1);
+        Assert.assertTrue(null != jsonObject && jsonObject.size() == 5);
     }
     
     @Test
@@ -66,12 +61,9 @@ public class JParserTest {
     }
     
     private void createJsonObject(String in) {
-        try {
-            JsonObject jsonObject = JsonObject.newInstance();
-            jsonObject.cast(in);
-            Assert.assertTrue(null != jsonObject && jsonObject.size() > 0);
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(in);
+        Assert.assertTrue(null != jsonObject && jsonObject.size() > 0);
     }
     
     @Test

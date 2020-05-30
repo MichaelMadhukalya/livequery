@@ -28,50 +28,30 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     
     @Override
     public JsonObject getJsonObject(int i) {
-        try {
-            com.livequery.types.JsonObject object = com.livequery.types.JsonObject.newInstance();
-            object.cast(list.get(i));
-            return object;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return null;
+        com.livequery.types.JsonObject object = com.livequery.types.JsonObject.newInstance();
+        object.cast(list.get(i));
+        return object;
     }
     
     @Override
     public javax.json.JsonArray getJsonArray(int i) {
-        try {
-            JsonArray array = JsonArray.newInstance();
-            array.cast(list.get(i));
-            return array;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return null;
+        JsonArray array = JsonArray.newInstance();
+        array.cast(list.get(i));
+        return array;
     }
     
     @Override
     public JsonNumber getJsonNumber(int i) {
-        try {
-            com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
-            number.cast(list.get(i));
-            return number;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return null;
+        com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+        number.cast(list.get(i));
+        return number;
     }
     
     @Override
     public JsonString getJsonString(int i) {
-        try {
-            com.livequery.types.JsonString string = com.livequery.types.JsonString.newInstance();
-            string.cast(list.get(i));
-            return string;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return null;
+        com.livequery.types.JsonString string = com.livequery.types.JsonString.newInstance();
+        string.cast(list.get(i));
+        return string;
     }
     
     @Override
@@ -79,12 +59,8 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
         List<T> newlist = new ArrayList<>();
         newlist = list.stream().map(e -> {
             T val = null;
-            try {
-                JsonType<?> jsonType = (JsonType<?>) e;
-                val = (T) jsonType.cast(((JsonType<?>) e).toString());
-            } catch (UnCastableObjectToInstanceTypeException ex) {
-            }
-            
+            JsonType<?> jsonType = (JsonType<?>) e;
+            val = (T) jsonType.cast(((JsonType<?>) e).toString());
             return val;
         }).collect(Collectors.toList());
         
@@ -105,14 +81,9 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     
     @Override
     public int getInt(int i) {
-        try {
-            com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
-            number.cast(list.get(i));
-            return number.intValue();
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return Integer.MIN_VALUE;
+        com.livequery.types.JsonNumber number = com.livequery.types.JsonNumber.newInstance();
+        number.cast(list.get(i));
+        return number.intValue();
     }
     
     @Override
@@ -123,14 +94,9 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     
     @Override
     public boolean getBoolean(int i) {
-        try {
-            com.livequery.types.JsonBoolean jsonBoolean = com.livequery.types.JsonBoolean.newInstance();
-            jsonBoolean.cast(list.get(i));
-            return jsonBoolean.booleanValue;
-        } catch (UnCastableObjectToInstanceTypeException e) {
-        }
-        
-        return false;
+        com.livequery.types.JsonBoolean jsonBoolean = com.livequery.types.JsonBoolean.newInstance();
+        jsonBoolean.cast(list.get(i));
+        return jsonBoolean.booleanValue;
     }
     
     @Override
@@ -303,7 +269,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
     }
     
     @Override
-    public JsonArray cast(Object value) throws UnCastableObjectToInstanceTypeException {
+    public JsonArray cast(Object value) {
         if (null == value) {
             throw new IllegalArgumentException(String.format("Can't construct valid JsonArray from null object"));
         }

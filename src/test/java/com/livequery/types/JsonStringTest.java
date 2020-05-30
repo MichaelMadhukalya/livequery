@@ -1,6 +1,5 @@
 package com.livequery.types;
 
-import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,7 +18,7 @@ public class JsonStringTest {
     }
     
     @Test
-    public void castValidStringAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void castValidStringAsInput_Test() {
         String test = "test";
         jsonString = JsonString.newInstance();
         jsonString.cast(test);
@@ -27,7 +26,7 @@ public class JsonStringTest {
     }
     
     @Test(expected = IllegalArgumentException.class)
-    public void castInValidStringAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void castInValidStringAsInput_Test() {
         jsonString = JsonString.newInstance();
         jsonString.cast(null);
     }

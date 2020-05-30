@@ -14,7 +14,7 @@ public abstract class JsonType<T extends JsonType> implements JsonValue {
     
     public abstract T cast(Object value) throws UnCastableObjectToInstanceTypeException;
     
-    public static class UnCastableObjectToInstanceTypeException extends Exception {
+    public static class UnCastableObjectToInstanceTypeException extends RuntimeException {
         public UnCastableObjectToInstanceTypeException(String message) {
             super(message);
         }

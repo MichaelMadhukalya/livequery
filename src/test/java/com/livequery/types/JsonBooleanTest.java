@@ -1,6 +1,5 @@
 package com.livequery.types;
 
-import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import org.junit.After;
@@ -18,35 +17,35 @@ public class JsonBooleanTest {
     }
     
     @Test
-    public void castValidInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void castValidInput_Test() {
         JsonBoolean jsonBoolean = JsonBoolean.newInstance();
         jsonBoolean.cast(JsonValue.TRUE);
         Assert.assertTrue(jsonBoolean.booleanValue == Boolean.TRUE);
     }
     
     @Test
-    public void castInValidStringAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void castInValidStringAsInput_Test() {
         JsonBoolean jsonBoolean = JsonBoolean.newInstance();
         jsonBoolean.cast("none");
         Assert.assertTrue(jsonBoolean.booleanValue == Boolean.FALSE);
     }
     
     @Test
-    public void castValidStringAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void castValidStringAsInput_Test() {
         JsonBoolean jsonBoolean = JsonBoolean.newInstance();
         jsonBoolean.cast("False");
         Assert.assertTrue(jsonBoolean.booleanValue == Boolean.FALSE);
     }
     
     @Test
-    public void castValidStringAndGetIntegerValue_Test() throws UnCastableObjectToInstanceTypeException {
+    public void castValidStringAndGetIntegerValue_Test() {
         JsonBoolean jsonBoolean = JsonBoolean.newInstance();
         jsonBoolean.cast("TRUE");
         Assert.assertTrue(jsonBoolean.getInt() == 1);
     }
     
     @Test
-    public void castValidStringAndCheckValueType_Test() throws UnCastableObjectToInstanceTypeException {
+    public void castValidStringAndCheckValueType_Test() {
         JsonBoolean jsonBoolean = JsonBoolean.newInstance();
         jsonBoolean.cast("FALSE");
         Assert.assertTrue(jsonBoolean.getValueType() == ValueType.FALSE);

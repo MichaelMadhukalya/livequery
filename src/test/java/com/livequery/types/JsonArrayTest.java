@@ -1,6 +1,5 @@
 package com.livequery.types;
 
-import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import org.junit.After;
@@ -21,7 +20,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void mixedArrayValuesAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void mixedArrayValuesAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         JsonArray jsonArray = jsonObject.getJsonArray("key");
@@ -29,7 +28,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void compareValuesFromMixedArray_Test() throws UnCastableObjectToInstanceTypeException {
+    public void compareValuesFromMixedArray_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -50,7 +49,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void verifyNullValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyNullValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -62,7 +61,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void verifyStringValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyStringValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -78,7 +77,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void verifyBooleanValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyBooleanValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -91,7 +90,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void verifyNestedArrayValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyNestedArrayValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -115,7 +114,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void verifyIntValueAsOutput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyIntValueAsOutput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -125,7 +124,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void verifyBooleanValueAsOutput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyBooleanValueAsOutput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -135,7 +134,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void verifyStringValueAsOutput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyStringValueAsOutput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -145,7 +144,7 @@ public class JsonArrayTest {
     }
     
     @Test
-    public void verifyNullValueAsOutput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyNullValueAsOutput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         

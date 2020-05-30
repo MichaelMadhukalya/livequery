@@ -69,7 +69,7 @@ public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonN
     }
     
     @Override
-    public JsonNumber cast(Object value) throws UnCastableObjectToInstanceTypeException {
+    public JsonNumber cast(Object value) {
         if (null == value) {
             throw new IllegalArgumentException("Can't construct valid JsonNumber from null object");
         }

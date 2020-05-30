@@ -75,56 +75,56 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void emptyStringAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void emptyStringAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_0);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 0);
     }
     
     @Test
-    public void singleKeyAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void singleKeyAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 1);
     }
     
     @Test
-    public void singleKeyWithArrayValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void singleKeyWithArrayValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_11);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 1);
     }
     
     @Test
-    public void multipleKeyAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void multipleKeyAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_2);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 2);
     }
     
     @Test
-    public void mixedValuesAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void mixedValuesAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_3);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 4);
     }
     
     @Test
-    public void nestedValuesAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void nestedValuesAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_4);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 4);
     }
     
     @Test
-    public void mixedNestedValuesAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void mixedNestedValuesAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_5);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 5);
     }
     
     @Test
-    public void nullValuesAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void nullValuesAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_6);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 2);
@@ -139,7 +139,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void booleanValuesAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void booleanValuesAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_7);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 2);
@@ -148,7 +148,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void numberValuesAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void numberValuesAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_8);
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 2);
@@ -161,43 +161,43 @@ public class JsonObjectTest {
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
-    public void invalidStringAsInput1_Test() throws UnCastableObjectToInstanceTypeException {
+    public void invalidStringAsInput1_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_9);
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
-    public void nonStringKeyAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void nonStringKeyAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_10);
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
-    public void invalidStringAsInput2_Test() throws UnCastableObjectToInstanceTypeException {
+    public void invalidStringAsInput2_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_12);
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
-    public void invalidStringAsInput3_Test() throws UnCastableObjectToInstanceTypeException {
+    public void invalidStringAsInput3_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_13);
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
-    public void invalidStringAsInput4_Test() throws UnCastableObjectToInstanceTypeException {
+    public void invalidStringAsInput4_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_14);
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
-    public void invalidStringAsInput5_Test() throws UnCastableObjectToInstanceTypeException {
+    public void invalidStringAsInput5_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_15);
     }
     
     @Test
-    public void validNumberValueInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void validNumberValueInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_16);
         JsonNumber jsonNumber = JsonNumber.newInstance().cast(jsonObject.get("key"));
@@ -205,19 +205,19 @@ public class JsonObjectTest {
     }
     
     @Test(expected = IllegalArgumentException.class)
-    public void nullObjectAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void nullObjectAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(null);
     }
     
     @Test(expected = UnCastableObjectToInstanceTypeException.class)
-    public void emptyStringAsKeyInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void emptyStringAsKeyInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_17);
     }
     
     @Test
-    public void getJsonObjectAsValue_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getJsonObjectAsValue_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_5);
         javax.json.JsonObject jsonObject1 = jsonObject.getJsonObject("key4");
@@ -225,7 +225,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void getJsonArrayAsValue_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getJsonArrayAsValue_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_5);
         javax.json.JsonArray jsonArray = jsonObject.getJsonArray("key7");
@@ -233,7 +233,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void verifyNumberValues_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyNumberValues_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_5);
         javax.json.JsonArray jsonArray = jsonObject.getJsonArray("key7");
@@ -311,7 +311,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void getNumberValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getNumberValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_16);
         javax.json.JsonNumber jsonNumber = jsonObject.getJsonNumber("key");
@@ -319,7 +319,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void getJsonStringValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getJsonStringValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         javax.json.JsonString jsonString = jsonObject.getJsonString("key");
@@ -327,7 +327,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void getStringValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getStringValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         String s = jsonObject.getString("key");
@@ -335,7 +335,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void getIntValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getIntValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_16);
         int num = jsonObject.getInt("key");
@@ -343,7 +343,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void getBooleanValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getBooleanValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_7);
         Boolean value = jsonObject.getBoolean("key1");
@@ -351,35 +351,35 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void getNullValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getNullValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_6);
         Assert.assertTrue(jsonObject.isNull("key3") == false);
     }
     
     @Test
-    public void nullValueAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void nullValueAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_18);
         Assert.assertTrue(jsonObject.isNull("key") == true);
     }
     
     @Test
-    public void getValueType_Test() throws UnCastableObjectToInstanceTypeException {
+    public void getValueType_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         Assert.assertTrue(jsonObject.getValueType().equals(ValueType.OBJECT));
     }
     
     @Test
-    public void isEmpty_Test() throws UnCastableObjectToInstanceTypeException {
+    public void isEmpty_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         Assert.assertTrue(jsonObject.isEmpty() == false);
     }
     
     @Test
-    public void clearAndVerifyIsEmpty_Test() throws UnCastableObjectToInstanceTypeException {
+    public void clearAndVerifyIsEmpty_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         jsonObject.clear();
@@ -387,14 +387,14 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void verifyContainsKey_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyContainsKey_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_5);
         Assert.assertTrue(jsonObject.containsKey("key4"));
     }
     
     @Test
-    public void verifyContainsValue_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyContainsValue_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_5);
         
@@ -407,14 +407,14 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void verifyEntrySetElementCount_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyEntrySetElementCount_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_5);
         Assert.assertTrue(jsonObject.entrySet().size() == 5);
     }
     
     @Test
-    public void verifyStringValueWithNullWordAsInput_Test() throws UnCastableObjectToInstanceTypeException {
+    public void verifyStringValueWithNullWordAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_19);
         JsonType<?> valueType = (JsonType<?>) jsonObject.get("key");
@@ -422,7 +422,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile0_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile0_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_0);
         
@@ -441,7 +441,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile1_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile1_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_1);
         
@@ -460,7 +460,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile2_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile2_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_2);
         
@@ -479,7 +479,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile3_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile3_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_3);
         
@@ -498,7 +498,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile4_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile4_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_4);
         
@@ -517,7 +517,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile5_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile5_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_5);
         
@@ -536,7 +536,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile6_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile6_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_6);
         
@@ -555,7 +555,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile7_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile7_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_7);
         
@@ -574,7 +574,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile8_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile8_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_8);
         
@@ -594,7 +594,7 @@ public class JsonObjectTest {
     
     
     @Test
-    public void writeToFile11_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile11_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_11);
         
@@ -613,7 +613,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile16_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile16_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_16);
         
@@ -632,7 +632,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFile18_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFile18_Test() throws IOException {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_18);
         
@@ -651,7 +651,7 @@ public class JsonObjectTest {
     }
     
     @Test
-    public void writeToFileArrayOfJsonObjects_Test() throws UnCastableObjectToInstanceTypeException, IOException {
+    public void writeToFileArrayOfJsonObjects_Test() throws IOException {
         JsonObject jsonObject1 = JsonObject.newInstance();
         jsonObject1.cast(INPUT_1);
         

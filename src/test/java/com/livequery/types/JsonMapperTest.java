@@ -1,6 +1,5 @@
 package com.livequery.types;
 
-import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import java.util.List;
 import java.util.Map;
 import org.junit.After;
@@ -29,14 +28,14 @@ public class JsonMapperTest {
     }
     
     @Test
-    public void stringToJsonObject_test() throws UnCastableObjectToInstanceTypeException {
+    public void stringToJsonObject_test() {
         JsonMapper mapper = new JsonMapper();
         JsonObject jsonObject = mapper.toJsonObject(input);
         Assert.assertTrue(null != jsonObject && jsonObject.size() == 6);
     }
     
     @Test
-    public void jsonObjectToMap_test() throws UnCastableObjectToInstanceTypeException {
+    public void jsonObjectToMap_test() {
         JsonMapper mapper = new JsonMapper();
         JsonObject jsonObject = mapper.toJsonObject(input);
         Assert.assertTrue(null != jsonObject && jsonObject.size() == 6);
@@ -45,21 +44,21 @@ public class JsonMapperTest {
     }
     
     @Test
-    public void stringToMap_test() throws UnCastableObjectToInstanceTypeException {
+    public void stringToMap_test() {
         JsonMapper mapper = new JsonMapper();
         Map<Object, Object> map = mapper.toMap(input);
         Assert.assertTrue(null != map && map.size() == 6);
     }
     
     @Test
-    public void jsonObjectToString_test() throws UnCastableObjectToInstanceTypeException {
+    public void jsonObjectToString_test() {
         JsonMapper mapper = new JsonMapper();
         JsonObject jsonObject = mapper.toJsonObject(input);
         Assert.assertTrue(null != jsonObject && jsonObject.size() == 6 && mapper.toString(jsonObject).contains("null"));
     }
     
     @Test
-    public void stringToList_test() throws UnCastableObjectToInstanceTypeException {
+    public void stringToList_test() {
         JsonMapper mapper = new JsonMapper();
         JsonArray jsonArray = JsonArray.newInstance();
         jsonArray.cast(arr);
@@ -68,7 +67,7 @@ public class JsonMapperTest {
     }
     
     @Test
-    public void jsonArrayToString_Test() throws UnCastableObjectToInstanceTypeException {
+    public void jsonArrayToString_Test() {
         JsonMapper mapper = new JsonMapper();
         JsonArray jsonArray = JsonArray.newInstance();
         jsonArray.cast(arr);
