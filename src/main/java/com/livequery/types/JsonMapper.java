@@ -1,9 +1,6 @@
 package com.livequery.types;
 
-import com.livequery.types.JsonType.UnCastableObjectToInstanceTypeException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,45 +23,19 @@ public class JsonMapper {
     }
     
     public List<Object> toList(String input) {
-        JsonArray jsonArray = null;
-        List<Object> list = new ArrayList<>();
-        
-        try {
-            jsonArray = JsonArray.newInstance();
-            jsonArray.cast(input);
-            list = toList(jsonArray);
-        } catch (UnCastableObjectToInstanceTypeException e) {
-            logger.error(String.format("Exception getting list object from input string: {%s}", e));
-        }
-        
-        return list;
+        return toList(JsonArray.newInstance().cast(input));
     }
     
     public Map<Object, Object> toMap(String input) {
-        JsonObject jsonObject = null;
-        Map<Object, Object> map = new HashMap<>();
-        
-        try {
-            jsonObject = JsonObject.newInstance();
-            jsonObject.cast(input);
-            map = toMap(jsonObject);
-        } catch (UnCastableObjectToInstanceTypeException e) {
-            logger.error(String.format("Exception getting map object from input string: {%s}", e));
-        }
-        
-        return map;
+        return toMap(JsonObject.newInstance().cast(input));
     }
     
     public JsonObject toJsonObject(String input) {
-        JsonObject jsonObject = null;
-        try {
-            jsonObject = JsonObject.newInstance();
-            jsonObject.cast(input);
-        } catch (UnCastableObjectToInstanceTypeException e) {
-            logger.error(String.format("Exception getting JsonObject from input string: {%s}", e));
-        }
-        
-        return jsonObject;
+        return JsonObject.newInstance().cast(input);
+    }
+    
+    public JsonArray toJsonArray(String input) {
+        return JsonArray.newInstance().cast(input);
     }
     
     public String toString(JsonObject jsonObject) {

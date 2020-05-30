@@ -35,6 +35,13 @@ public class JsonMapperTest {
     }
     
     @Test
+    public void stringToJsonArray_test() {
+        JsonMapper mapper = new JsonMapper();
+        JsonArray jsonArray = mapper.toJsonArray(arr);
+        Assert.assertTrue(null != jsonArray && jsonArray.size() == 6);
+    }
+    
+    @Test
     public void jsonObjectToMap_test() {
         JsonMapper mapper = new JsonMapper();
         JsonObject jsonObject = mapper.toJsonObject(input);

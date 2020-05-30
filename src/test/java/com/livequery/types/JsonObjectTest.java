@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.Set;
 import javax.json.JsonValue;
 import javax.json.JsonValue.ValueType;
 import org.junit.After;
@@ -694,5 +696,41 @@ public class JsonObjectTest {
         
         /* delete file */
         file.delete();
+    }
+    
+    @Test
+    public void getAllValuesFromJsonObject_Test() {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_5);
+        Collection<JsonValue> values = jsonObject.values();
+        Assert.assertTrue(null != values && values.size() == 5);
+    }
+    
+    @Test
+    public void getAllKeysFromJsonObject_Test() {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_4);
+        Set<String> keys = jsonObject.keySet();
+        Assert.assertTrue(null != keys && keys.size() == 4 && keys.contains("key4"));
+    }
+    
+    @Test
+    public void putNewKeyValuePairInJsonObject_Test() {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_4);
+        Set<String> keys = jsonObject.keySet();
+        Assert.assertTrue(null != keys && keys.size() == 4 && keys.contains("key4"));
+        jsonObject.put("key5", new JsonMapper().toJsonArray("[1, 2, 3]"));
+        Assert.assertTrue(null != jsonObject && jsonObject.size() == 5);
+    }
+    
+    @Test
+    public void removeKeyValuePairInJsonObject_Test() {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(INPUT_4);
+        Set<String> keys = jsonObject.keySet();
+        Assert.assertTrue(null != keys && keys.size() == 4 && keys.contains("key4"));
+        jsonObject.remove("key4");
+        Assert.assertTrue(null != jsonObject && jsonObject.size() == 3);
     }
 }
